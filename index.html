@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GD Public School – Excellence in Education</title>
+  <meta name="description" content="GD Public School – A premier institution committed to academic excellence, holistic development, and bright futures." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== ANNOUNCEMENT BAR ===== -->
+  <div class="announce-bar" id="announceBar">
+    <div class="announce-inner">
+      <span class="announce-dot"></span>
+      <span class="announce-text">🎓 Welcome to GD Public School &nbsp;|&nbsp; Admissions Open 2024-25 &nbsp;|&nbsp; Call us: <strong id="navPhone">–</strong></span>
+      <button class="announce-close" onclick="document.getElementById('announceBar').style.display='none'; document.getElementById('navbar').style.top='16px'">✕</button>
+    </div>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+
+      <!-- BRAND -->
+      <div class="nav-brand">
+        <div class="logo-wrap" id="logoWrap">
+          <img id="schoolLogoImg" src="" alt="School Logo" class="school-logo hidden" />
+          <div class="logo-placeholder" id="logoPlaceholder">
+            <span class="logo-ph-icon">🏫</span>
+          </div>
+        </div>
+        <div class="brand-text">
+          <span class="school-name">GD Public School</span>
+          <span class="school-tagline">✦ Excellence in Education ✦</span>
+        </div>
+      </div>
+
+      <!-- NAV PILL -->
+      <div class="nav-pill" id="navLinks">
+        <a href="#home" class="nav-link active" data-label="Home">Home</a>
+        <a href="#about" class="nav-link" data-label="About">About</a>
+
+        <!-- MEGA DROPDOWN -->
+        <div class="nav-dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-label="Academics">
+            Academics
+            <svg class="drop-arrow" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <div class="mega-dropdown">
+            <div class="mega-col">
+              <div class="mega-label">Curriculum</div>
+              <a href="#academics" class="mega-item">
+                <span class="mega-icon">📖</span>
+                <div><strong>Syllabus & Classes</strong><small>Class Nursery – XII</small></div>
+              </a>
+              <a href="#facilities" class="mega-item">
+                <span class="mega-icon">🏗️</span>
+                <div><strong>Facilities</strong><small>Labs, Library & more</small></div>
+              </a>
+            </div>
+            <div class="mega-col">
+              <div class="mega-label">Activities</div>
+              <a href="#media" class="mega-item">
+                <span class="mega-icon">🖼️</span>
+                <div><strong>Gallery</strong><small>Photos & Videos</small></div>
+              </a>
+              <a href="#notices" class="mega-item">
+                <span class="mega-icon">📢</span>
+                <div><strong>Notice Board</strong><small>Latest updates</small></div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="#team" class="nav-link" data-label="Team">Our Team</a>
+        <a href="#media" class="nav-link" data-label="Media">Media</a>
+        <a href="#contact" class="nav-link" data-label="Contact">Contact</a>
+      </div>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="nav-actions">
+        <a href="#contact" class="nav-enquiry-btn">✨ Enquire Now</a>
+        <button class="hamburger" id="hamburger" aria-label="Toggle Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+    </div>
+    <div class="nav-progress" id="navProgress"></div>
+
+    <!-- MOBILE DRAWER -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#home" class="mob-link" onclick="closeMobileNav()">🏠 Home</a>
+      <a href="#about" class="mob-link" onclick="closeMobileNav()">ℹ️ About</a>
+      <a href="#academics" class="mob-link" onclick="closeMobileNav()">📚 Academics</a>
+      <a href="#facilities" class="mob-link" onclick="closeMobileNav()">🏗️ Facilities</a>
+      <a href="#team" class="mob-link" onclick="closeMobileNav()">👥 Our Team</a>
+      <a href="#media" class="mob-link" onclick="closeMobileNav()">📷 Media</a>
+      <a href="#notices" class="mob-link" onclick="closeMobileNav()">📢 Notices</a>
+      <a href="#contact" class="mob-link" onclick="closeMobileNav()">📞 Contact</a>
+      <a href="admin.html" class="mob-link mob-admin">⚙️ Admin Panel</a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="hero-orb orb1"></div>
+      <div class="hero-orb orb2"></div>
+      <div class="hero-orb orb3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">🏫 Welcome to</div>
+      <h1 class="hero-title">GD Public School</h1>
+      <p class="hero-subtitle">Shaping Tomorrow's Leaders Today</p>
+      <p class="hero-desc" id="heroDesc">A premier institution committed to academic excellence, holistic development, and nurturing bright futures for every student.</p>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="stat-num" id="statStudents">–</span>
+          <span class="stat-label">Students</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="statTeachers">–</span>
+          <span class="stat-label">Teachers</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="statYears">–</span>
+          <span class="stat-label">Years of Excellence</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="statClasses">–</span>
+          <span class="stat-label">Classes</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="#about" class="btn btn-primary">Explore School</a>
+        <a href="#contact" class="btn btn-outline">Contact Us</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-indicator"></div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">About Us</span>
+        <h2 class="section-title">Know Our School</h2>
+        <p class="section-desc">Building a foundation of knowledge, character, and excellence.</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-icon">📍</div>
+          <h3>Location</h3>
+          <p id="schoolAddress">–</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">📞</div>
+          <h3>Contact</h3>
+          <p id="schoolPhone">–</p>
+          <p id="schoolEmail">–</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🎓</div>
+          <h3>Board / Affiliation</h3>
+          <p id="schoolBoard">–</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🏫</div>
+          <h3>School Type</h3>
+          <p id="schoolType">–</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">📅</div>
+          <h3>Established</h3>
+          <p id="schoolEstablished">–</p>
+        </div>
+        <div class="about-card">
+          <div class="about-icon">🕐</div>
+          <h3>Timings</h3>
+          <p id="schoolTimings">–</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TEAM ===== -->
+  <section class="section section-alt" id="team">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Leadership</span>
+        <h2 class="section-title">Our Team</h2>
+        <p class="section-desc">Meet the dedicated leaders steering our institution towards greatness.</p>
+      </div>
+      <div class="team-grid" id="teamGrid">
+        <!-- Team cards rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ACADEMICS ===== -->
+  <section class="section" id="academics">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Academics</span>
+        <h2 class="section-title">Academic Excellence</h2>
+        <p class="section-desc">Comprehensive curriculum designed to unlock every student's potential.</p>
+      </div>
+      <div class="academics-content">
+        <div class="academics-text">
+          <p id="academicsDesc">Our curriculum integrates modern teaching methodologies with time-tested academic practices, ensuring students excel in all areas.</p>
+          <ul class="feature-list" id="featureList">
+            <li>✅ CBSE / State Board Affiliated</li>
+            <li>✅ Smart Classrooms</li>
+            <li>✅ Experienced Faculty</li>
+            <li>✅ Co-curricular Activities</li>
+            <li>✅ Sports & Physical Education</li>
+          </ul>
+        </div>
+        <div class="academics-visual">
+          <div class="visual-box">
+            <div class="visual-icon">📚</div>
+            <div class="visual-text">
+              <span id="classRange">Class –</span>
+              <small>Academic Classes</small>
+            </div>
+          </div>
+          <div class="visual-box">
+            <div class="visual-icon">🏆</div>
+            <div class="visual-text">
+              <span id="achievements">–</span>
+              <small>Awards & Achievements</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FACILITIES ===== -->
+  <section class="section section-alt" id="facilities">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Infrastructure</span>
+        <h2 class="section-title">Our Facilities</h2>
+      </div>
+      <div class="facilities-grid" id="facilitiesGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MEDIA ===== -->
+  <section class="section" id="media">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Media</span>
+        <h2 class="section-title">Gallery & Media</h2>
+        <p class="section-desc">Moments that define our school's spirit and achievements.</p>
+      </div>
+      <div class="media-grid" id="mediaGrid">
+        <div class="media-empty">
+          <div class="media-empty-icon">🖼️</div>
+          <p>Media will appear here once uploaded from Admin Panel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NOTICE BOARD ===== -->
+  <section class="section section-alt" id="notices">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Updates</span>
+        <h2 class="section-title">Notice Board</h2>
+      </div>
+      <div class="notice-wrap">
+        <div class="notice-list" id="noticeList">
+          <div class="notice-empty">No notices yet. Admin can add notices from the Admin Panel.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="section-title">Contact Us</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="contact-icon">📍</span>
+            <div>
+              <strong>Address</strong>
+              <p id="contactAddress">–</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📞</span>
+            <div>
+              <strong>Phone</strong>
+              <p id="contactPhone">–</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <div>
+              <strong>Email</strong>
+              <p id="contactEmail">–</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">🕐</span>
+            <div>
+              <strong>Office Hours</strong>
+              <p id="contactTimings">–</p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-form-wrap">
+          <form class="contact-form" id="contactForm">
+            <input type="text" placeholder="Your Name" class="form-input" required />
+            <input type="email" placeholder="Your Email" class="form-input" required />
+            <input type="text" placeholder="Subject" class="form-input" required />
+            <textarea placeholder="Your Message" class="form-input form-textarea" rows="4" required></textarea>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="footer-school-name">GD Public School</span>
+          <p>Excellence in Education since our founding. Committed to shaping tomorrow's leaders.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a href="#team">Our Team</a>
+          <a href="#media">Media</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-links">
+          <h4>Information</h4>
+          <a href="#academics">Academics</a>
+          <a href="#facilities">Facilities</a>
+          <a href="#notices">Notices</a>
+          <a href="admin.html">Admin Panel</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 GD Public School. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

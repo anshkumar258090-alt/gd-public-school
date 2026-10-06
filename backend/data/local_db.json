@@ -1,0 +1,151 @@
+{
+  "school": {
+    "address": "Main Campus, Sector 4, Civil Lines, Near City Center",
+    "phone": "+91 98765 43210 / +91 12345 67890",
+    "email": "info@gdpublicschool.edu.in",
+    "board": "CBSE Affiliated (Affiliation No: 2130000)",
+    "type": "Co-Educational English Medium (K-12)",
+    "established": "2008",
+    "timings": "Mon - Sat: 08:00 AM - 02:00 PM",
+    "logoUrl": "",
+    "heroDescription": "Dedicated to nurturing curious minds, strong values, and visionary leaders through holistic and quality education with modern facilities, smart labs, and sports arenas."
+  },
+  "stats": {
+    "students": "1,500+",
+    "teachers": "75+",
+    "years": "16+",
+    "classes": "Pre-Nur to 12th"
+  },
+  "team": [
+    {
+      "_id": "director",
+      "role": "Director",
+      "name": "DR AJAY ARYA",
+      "qualification": "MBBS",
+      "experience": "",
+      "bio": "DOCTOR",
+      "email": "",
+      "photoUrl": "/uploads/team/team_1791310495463-844166_Friendly_Doctor_Portrait_with_Stethoscope.png",
+      "order": 1,
+      "isActive": true,
+      "photoPublicId": "team_1791310495463-844166_Friendly_Doctor_Portrait_with_Stethoscope.png"
+    },
+    {
+      "_id": "md",
+      "role": "Managing Director",
+      "name": "Dr. Rajesh Sharma",
+      "qualification": "M.Ed., Ph.D.",
+      "experience": "20+ Years in Education",
+      "bio": "Dedicated to modern educational infrastructure and student growth.",
+      "email": "md@gdpublicschool.edu.in",
+      "photoUrl": "/uploads/team/team_1791310423667-19434_Formal_Indian_Passport_Portrait.png",
+      "order": 2,
+      "isActive": true,
+      "photoPublicId": "team_1791310423667-19434_Formal_Indian_Passport_Portrait.png"
+    },
+    {
+      "_id": "principal",
+      "role": "Principal",
+      "name": "Mrs. Sunita Verma",
+      "qualification": "M.Sc., M.Ed.",
+      "experience": "18+ Years in Teaching & Administration",
+      "bio": "Guiding young minds towards academic and ethical excellence.",
+      "email": "principal@gdpublicschool.edu.in",
+      "photoUrl": "/uploads/team/team_1791310429486-337749_Traditional_Saree_Portrait_with_Gold_Jewellery.png",
+      "order": 3,
+      "isActive": true,
+      "photoPublicId": "team_1791310429486-337749_Traditional_Saree_Portrait_with_Gold_Jewellery.png"
+    },
+    {
+      "_id": "vp",
+      "role": "Vice Principal",
+      "name": "Mr. Arvind Saxena",
+      "qualification": "M.A. (English), B.Ed.",
+      "experience": "15+ Years in Leadership",
+      "bio": "Committed to discipline, holistic extracurriculars, and student success.",
+      "email": "vp@gdpublicschool.edu.in",
+      "photoUrl": "",
+      "order": 4,
+      "isActive": true
+    }
+  ],
+  "media": [],
+  "notices": [
+    {
+      "_id": "1",
+      "title": "Admissions Open for Academic Session 2025-26",
+      "content": "Registration forms for Nursery to Class 9th & 11th are now available in the school office and online portal.",
+      "date": "2026-10-06T16:21:29.296Z",
+      "isActive": true
+    },
+    {
+      "_id": "2",
+      "title": "Annual Sports Meet & Cultural Fiesta",
+      "content": "All parents and guardians are cordially invited to attend the Annual Sports Day scheduled for this month.",
+      "date": "2026-10-06T16:21:29.297Z",
+      "isActive": true
+    }
+  ],
+  "enquiries": [
+    {
+      "_id": "enq_1791305092100",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1st to 5th (Primary)",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:44:52.101Z"
+    },
+    {
+      "_id": "enq_1791305074239",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1st to 5th (Primary)",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:44:34.239Z"
+    },
+    {
+      "_id": "enq_1791305020094",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:43:40.094Z"
+    },
+    {
+      "_id": "enq_1791304917575",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:41:57.575Z"
+    },
+    {
+      "_id": "enq_1791304844265",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:40:44.265Z"
+    },
+    {
+      "_id": "enq_1791304706440",
+      "parentName": "Ramesh Sharma",
+      "phone": "+91 98765 43210",
+      "email": "ramesh.sharma@example.com",
+      "studentGrade": "Class 1",
+      "message": "Kindly share details on transportation from Civil Lines and fee structure for Grade 4.",
+      "status": "new",
+      "createdAt": "2026-10-06T16:38:26.440Z"
+    }
+  ]
+}

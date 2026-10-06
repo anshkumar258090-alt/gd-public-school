@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel – GD Public School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">🏫</div>
+      <h1 class="login-title">Admin Panel</h1>
+      <p class="login-sub">GD Public School</p>
+      <div class="login-form">
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="loginUser" placeholder="admin" class="admin-input" />
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="••••••••" class="admin-input" />
+        </div>
+        <button onclick="doLogin()" class="btn-admin-primary" id="loginBtn">Login</button>
+        <p class="login-hint" id="loginError"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div class="admin-layout hidden" id="adminDash">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">🏫</div>
+        <div>
+          <div class="sidebar-school">GD Public School</div>
+          <div class="sidebar-role">Administrator</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="sidebar-item active" onclick="showTab('general')" id="tab-general">
+          <span class="si-icon">🏠</span> General Info
+        </button>
+        <button class="sidebar-item" onclick="showTab('stats')" id="tab-stats">
+          <span class="si-icon">📊</span> Statistics
+        </button>
+        <button class="sidebar-item" onclick="showTab('logo')" id="tab-logo">
+          <span class="si-icon">🖼️</span> School Logo
+        </button>
+        <button class="sidebar-item" onclick="showTab('team')" id="tab-team">
+          <span class="si-icon">👥</span> Team / Staff
+        </button>
+        <button class="sidebar-item" onclick="showTab('academics')" id="tab-academics">
+          <span class="si-icon">📚</span> Academics
+        </button>
+        <button class="sidebar-item" onclick="showTab('facilities')" id="tab-facilities">
+          <span class="si-icon">🏗️</span> Facilities
+        </button>
+        <button class="sidebar-item" onclick="showTab('media')" id="tab-media">
+          <span class="si-icon">📷</span> Media / Gallery
+        </button>
+        <button class="sidebar-item" onclick="showTab('notices')" id="tab-notices">
+          <span class="si-icon">📢</span> Notice Board
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" target="_blank" class="sidebar-view-btn">🌐 View Website</a>
+        <button onclick="doLogout()" class="sidebar-logout">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <button class="topbar-toggle" onclick="toggleSidebar()" id="sidebarToggle">☰</button>
+        <h2 class="topbar-title" id="topbarTitle">General Info</h2>
+        <div class="topbar-right">
+          <span class="topbar-badge">● Live</span>
+          <span>Admin</span>
+        </div>
+      </div>
+
+      <!-- ===== TABS ===== -->
+
+      <!-- GENERAL INFO -->
+      <div class="tab-content active" id="content-general">
+        <div class="content-header">
+          <h3>🏠 General School Information</h3>
+          <p>Update basic school details that appear on the website.</p>
+        </div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>School Address</label>
+            <textarea id="g_address" class="admin-input" rows="2" placeholder="Full school address..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Phone Number</label>
+            <input type="text" id="g_phone" class="admin-input" placeholder="+91 XXXXX XXXXX" />
+          </div>
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="g_email" class="admin-input" placeholder="school@email.com" />
+          </div>
+          <div class="input-group">
+            <label>Board / Affiliation</label>
+            <input type="text" id="g_board" class="admin-input" placeholder="e.g. CBSE, ICSE, UP Board..." />
+          </div>
+          <div class="input-group">
+            <label>School Type</label>
+            <input type="text" id="g_type" class="admin-input" placeholder="e.g. Co-Education, Boys, Girls..." />
+          </div>
+          <div class="input-group">
+            <label>Established Year</label>
+            <input type="text" id="g_established" class="admin-input" placeholder="e.g. 1995" />
+          </div>
+          <div class="input-group full">
+            <label>School Timings</label>
+            <input type="text" id="g_timings" class="admin-input" placeholder="e.g. 8:00 AM – 2:00 PM (Mon–Sat)" />
+          </div>
+        </div>
+        <button onclick="saveGeneral()" class="btn-admin-primary">💾 Save General Info</button>
+        <div class="save-msg" id="msg-general"></div>
+      </div>
+
+      <!-- STATISTICS -->
+      <div class="tab-content" id="content-stats">
+        <div class="content-header">
+          <h3>📊 School Statistics</h3>
+          <p>Update the statistics shown on the homepage hero section.</p>
+        </div>
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Total Students</label>
+            <input type="text" id="s_students" class="admin-input" placeholder="e.g. 1200+" />
+          </div>
+          <div class="input-group">
+            <label>Total Teachers</label>
+            <input type="text" id="s_teachers" class="admin-input" placeholder="e.g. 60+" />
+          </div>
+          <div class="input-group">
+            <label>Years of Excellence</label>
+            <input type="text" id="s_years" class="admin-input" placeholder="e.g. 25+" />
+          </div>
+          <div class="input-group">
+            <label>Total Classes</label>
+            <input type="text" id="s_classes" class="admin-input" placeholder="e.g. 1–12" />
+          </div>
+        </div>
+        <button onclick="saveStats()" class="btn-admin-primary">💾 Save Statistics</button>
+        <div class="save-msg" id="msg-stats"></div>
+      </div>
+
+      <!-- LOGO -->
+      <div class="tab-content" id="content-logo">
+        <div class="content-header">
+          <h3>🖼️ School Logo</h3>
+          <p>Upload the school logo that appears in the navbar and throughout the website.</p>
+        </div>
+        <div class="logo-upload-area">
+          <div class="logo-preview-wrap" id="logoPreviewWrap">
+            <div class="logo-preview-placeholder" id="logoPreviewPlaceholder">
+              <span>🏫</span>
+              <p>No Logo Uploaded</p>
+            </div>
+            <img id="logoPreviewImg" src="" alt="Logo Preview" class="logo-preview-img hidden" />
+          </div>
+          <div class="upload-controls">
+            <label class="upload-btn" for="logoFileInput">
+              📁 Choose Logo File
+            </label>
+            <input type="file" id="logoFileInput" accept="image/*" onchange="previewLogo(this)" class="file-input-hidden" />
+            <p class="upload-hint">Supported: PNG, JPG, SVG, WebP (Max 5MB)</p>
+            <button onclick="saveLogo()" class="btn-admin-primary" id="saveLogoBtn" disabled>💾 Save Logo</button>
+            <button onclick="removeLogo()" class="btn-admin-danger" id="removeLogoBtn">🗑️ Remove Logo</button>
+          </div>
+        </div>
+        <div class="save-msg" id="msg-logo"></div>
+      </div>
+
+      <!-- TEAM -->
+      <div class="tab-content" id="content-team">
+        <div class="content-header">
+          <h3>👥 Team / Staff Members</h3>
+          <p>Update staff details and upload photos. Photos appear as profile cards on the website.</p>
+        </div>
+        <div class="team-admin-grid" id="teamAdminGrid">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="team-actions">
+          <button onclick="addTeamMember()" class="btn-admin-outline">➕ Add New Member</button>
+          <button onclick="saveTeam()" class="btn-admin-primary">💾 Save All Team Members</button>
+        </div>
+        <div class="save-msg" id="msg-team"></div>
+      </div>
+
+      <!-- ACADEMICS -->
+      <div class="tab-content" id="content-academics">
+        <div class="content-header">
+          <h3>📚 Academics</h3>
+          <p>Update academic information and features list.</p>
+        </div>
+        <div class="form-grid">
+          <div class="input-group full">
+            <label>Academics Description</label>
+            <textarea id="ac_description" class="admin-input" rows="4" placeholder="Describe your academic curriculum..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Class Range</label>
+            <input type="text" id="ac_classRange" class="admin-input" placeholder="e.g. I – XII or Nursery to 12th" />
+          </div>
+          <div class="input-group">
+            <label>Awards & Achievements</label>
+            <input type="text" id="ac_achievements" class="admin-input" placeholder="e.g. 50+ Awards" />
+          </div>
+          <div class="input-group full">
+            <label>Features / Highlights (one per line)</label>
+            <textarea id="ac_features" class="admin-input" rows="6" placeholder="CBSE / State Board Affiliated&#10;Smart Classrooms&#10;Experienced Faculty&#10;Sports & Physical Education"></textarea>
+          </div>
+        </div>
+        <button onclick="saveAcademics()" class="btn-admin-primary">💾 Save Academics</button>
+        <div class="save-msg" id="msg-academics"></div>
+      </div>
+
+      <!-- FACILITIES -->
+      <div class="tab-content" id="content-facilities">
+        <div class="content-header">
+          <h3>🏗️ Facilities</h3>
+          <p>Manage the facilities list shown on the website.</p>
+        </div>
+        <div class="facilities-admin-list" id="facilitiesAdminList">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="team-actions">
+          <button onclick="addFacility()" class="btn-admin-outline">➕ Add Facility</button>
+          <button onclick="saveFacilities()" class="btn-admin-primary">💾 Save Facilities</button>
+        </div>
+        <div class="save-msg" id="msg-facilities"></div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="tab-content" id="content-media">
+        <div class="content-header">
+          <h3>📷 Media / Gallery</h3>
+          <p>Upload photos and videos for the school gallery section.</p>
+        </div>
+        <div class="media-upload-area">
+          <label class="upload-big-btn" for="mediaFileInput">
+            <span class="upload-big-icon">📤</span>
+            <span>Click to Upload Photos / Videos</span>
+            <small>PNG, JPG, GIF, MP4, WebM supported</small>
+          </label>
+          <input type="file" id="mediaFileInput" accept="image/*,video/*" multiple onchange="handleMediaUpload(this)" class="file-input-hidden" />
+        </div>
+        <div class="media-admin-grid" id="mediaAdminGrid">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="save-msg" id="msg-media"></div>
+      </div>
+
+      <!-- NOTICES -->
+      <div class="tab-content" id="content-notices">
+        <div class="content-header">
+          <h3>📢 Notice Board</h3>
+          <p>Add or remove notices that appear on the website.</p>
+        </div>
+        <div class="notice-add-form">
+          <div class="input-group">
+            <label>Notice Title</label>
+            <input type="text" id="n_title" class="admin-input" placeholder="e.g. Annual Day Celebration" />
+          </div>
+          <div class="input-group">
+            <label>Notice Content</label>
+            <textarea id="n_content" class="admin-input" rows="3" placeholder="Notice details..."></textarea>
+          </div>
+          <div class="input-group">
+            <label>Date</label>
+            <input type="date" id="n_date" class="admin-input" />
+          </div>
+          <button onclick="addNotice()" class="btn-admin-primary">➕ Add Notice</button>
+        </div>
+        <div class="notices-admin-list" id="noticesAdminList">
+          <!-- Rendered by JS -->
+        </div>
+        <div class="save-msg" id="msg-notices"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
