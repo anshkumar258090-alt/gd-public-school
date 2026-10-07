@@ -1,6 +1,10 @@
 import { SchoolInfo, SchoolStats, TeamMember, MediaItem, SchoolNotice, AdmissionEnquiry } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://backend-teal-theta-78kf0b0n4q.vercel.app'
+    : 'http://localhost:5000');
 
 // Default fallback data
 export const DEFAULT_SCHOOL: SchoolInfo = {
@@ -241,7 +245,15 @@ export function logoutAdmin() {
 
 // --- School Info APIs ---
 export async function getSchoolInfo(): Promise<SchoolInfo> {
-  // Check local storage override first
+  const res = await apiFetch<{ success: boolean; data: SchoolInfo }>('/api/school');
+  if (res && res.success && res.data) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_school', JSON.stringify(res.data));
+    }
+    return { ...DEFAULT_SCHOOL, ...res.data };
+  }
+
+  // Fallback to local storage if API is unreachable
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_school');
     if (local) {
@@ -251,10 +263,6 @@ export async function getSchoolInfo(): Promise<SchoolInfo> {
     }
   }
 
-  const res = await apiFetch<{ success: boolean; data: SchoolInfo }>('/api/school');
-  if (res && res.success && res.data) {
-    return { ...DEFAULT_SCHOOL, ...res.data };
-  }
   return DEFAULT_SCHOOL;
 }
 
@@ -315,6 +323,15 @@ export async function deleteSchoolLogo() {
 
 // --- Stats APIs ---
 export async function getSchoolStats(): Promise<SchoolStats> {
+  const res = await apiFetch<{ success: boolean; data: SchoolStats }>('/api/stats');
+  if (res && res.success && res.data) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_stats', JSON.stringify(res.data));
+    }
+    return { ...DEFAULT_STATS, ...res.data };
+  }
+
+  // Fallback to local storage if API is unreachable
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_stats');
     if (local) {
@@ -324,10 +341,6 @@ export async function getSchoolStats(): Promise<SchoolStats> {
     }
   }
 
-  const res = await apiFetch<{ success: boolean; data: SchoolStats }>('/api/stats');
-  if (res && res.success && res.data) {
-    return { ...DEFAULT_STATS, ...res.data };
-  }
   return DEFAULT_STATS;
 }
 
@@ -557,6 +570,15 @@ export async function deleteMediaItem(id: string) {
 
 // --- Notices APIs ---
 export async function getNotices(): Promise<SchoolNotice[]> {
+  const res = await apiFetch<{ success: boolean; data: SchoolNotice[] }>('/api/notices');
+  if (res && res.success && res.data && res.data.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_notices', JSON.stringify(res.data));
+    }
+    return res.data;
+  }
+
+  // Fallback to local storage if API is unreachable
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_notices');
     if (local) {
@@ -567,10 +589,6 @@ export async function getNotices(): Promise<SchoolNotice[]> {
     }
   }
 
-  const res = await apiFetch<{ success: boolean; data: SchoolNotice[] }>('/api/notices');
-  if (res && res.success && res.data && res.data.length > 0) {
-    return res.data;
-  }
   return DEFAULT_NOTICES;
 }
 
