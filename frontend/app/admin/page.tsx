@@ -520,7 +520,7 @@ export default function AdminPage() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
+                  placeholder="gdps@2027"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
@@ -569,7 +569,7 @@ export default function AdminPage() {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to School Website</span>
             </Link>
-            <span className="text-[11px] text-slate-400">Default: admin / gdps2024</span>
+            <span className="text-[11px] text-slate-400 font-medium">Authorized Access Only</span>
           </div>
         </div>
       </div>

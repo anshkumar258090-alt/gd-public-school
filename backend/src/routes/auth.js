@@ -6,8 +6,8 @@ const router = express.Router();
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  const adminUser = process.env.ADMIN_USERNAME || 'admin';
-  const adminPass = process.env.ADMIN_PASSWORD || 'gdps2024';
+  const adminUser = process.env.ADMIN_USERNAME || 'gdps@2027';
+  const adminPass = process.env.ADMIN_PASSWORD || 'gdpsadmin@x_md';
   const jwtSecret = process.env.JWT_SECRET || 'gdps_jwt_secret_dev_key_2024';
 
   if (username === adminUser && password === adminPass) {
