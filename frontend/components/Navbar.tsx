@@ -79,9 +79,9 @@ export default function Navbar({ school }: NavbarProps) {
               <span className="uppercase tracking-wider">{school.announcementBadge || 'Admissions 2025–26'}</span>
             </div>
 
-            {/* Continuous Marquee Ticker */}
-            <div className="overflow-hidden whitespace-nowrap flex-1 relative hidden sm:block">
-              <div className="animate-marquee flex items-center gap-8 text-[11px] text-slate-300">
+            {/* Continuous Marquee Ticker (Active on BOTH Phone & Desktop) */}
+            <div className="overflow-hidden whitespace-nowrap flex-1 relative">
+              <div className="animate-marquee flex items-center gap-6 sm:gap-8 text-[11px] text-slate-300">
                 <span className="font-semibold text-white">
                   {school.announcementText || '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)'}
                 </span>
@@ -111,12 +111,18 @@ export default function Navbar({ school }: NavbarProps) {
                   <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
                   {school.board || 'CBSE Affiliated'} • {school.type || 'English Medium (K-12)'}
                 </span>
+                <span className="text-slate-500">•</span>
+                {school.phone && (
+                  <a href={`tel:${school.phone.split('/')[0].trim()}`} className="flex items-center gap-1 text-cyan-300 hover:text-white transition">
+                    <Phone className="w-3 h-3" />
+                    <span>Helpline: {school.phone}</span>
+                  </a>
+                )}
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-300">
+                  Campus: {school.address || 'Civil Lines, Near City Center'}
+                </span>
               </div>
-            </div>
-
-            {/* Mobile simplified ticker */}
-            <div className="sm:hidden flex-1 text-center truncate text-[11px] text-slate-300 font-medium">
-              <span>{school.announcementText || school.announcementBadge || 'Admissions Open'}</span>
             </div>
 
             {/* Close Announcement */}
