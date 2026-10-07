@@ -464,8 +464,33 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 flex flex-col justify-center items-center p-4">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border border-sky-200">
+      <div className="admin-scope min-h-screen bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 flex flex-col justify-center items-center p-4">
+        <style dangerouslySetInnerHTML={{ __html: `
+          .admin-scope input,
+          .admin-scope textarea,
+          .admin-scope select {
+            color: #0f172a !important;
+            -webkit-text-fill-color: #0f172a !important;
+            background-color: #ffffff !important;
+            caret-color: #0284c7 !important;
+            font-weight: 600 !important;
+          }
+          .admin-scope input::placeholder,
+          .admin-scope textarea::placeholder {
+            color: #64748b !important;
+            -webkit-text-fill-color: #64748b !important;
+            opacity: 0.85 !important;
+            font-weight: 400 !important;
+          }
+          .admin-scope input:focus,
+          .admin-scope textarea:focus,
+          .admin-scope select:focus {
+            color: #0f172a !important;
+            -webkit-text-fill-color: #0f172a !important;
+            border-color: #0284c7 !important;
+          }
+        `}} />
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border border-sky-200 text-slate-900">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-sky-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-sky-600/30">
               <ShieldCheck className="w-8 h-8" />
@@ -496,7 +521,7 @@ export default function AdminPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="admin"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
             </div>
@@ -513,7 +538,7 @@ export default function AdminPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
             </div>
@@ -553,7 +578,32 @@ export default function AdminPage() {
 
   // --- RENDER AUTHENTICATED DASHBOARD ---
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+    <div className="admin-scope min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .admin-scope input,
+        .admin-scope textarea,
+        .admin-scope select {
+          color: #0f172a !important;
+          -webkit-text-fill-color: #0f172a !important;
+          background-color: #ffffff !important;
+          caret-color: #0284c7 !important;
+          font-weight: 600 !important;
+        }
+        .admin-scope input::placeholder,
+        .admin-scope textarea::placeholder {
+          color: #64748b !important;
+          -webkit-text-fill-color: #64748b !important;
+          opacity: 0.85 !important;
+          font-weight: 400 !important;
+        }
+        .admin-scope input:focus,
+        .admin-scope textarea:focus,
+        .admin-scope select:focus {
+          color: #0f172a !important;
+          -webkit-text-fill-color: #0f172a !important;
+          border-color: #0284c7 !important;
+        }
+      `}} />
       {/* Top Admin Header */}
       <header className="bg-white border-b border-sky-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -888,7 +938,7 @@ export default function AdminPage() {
                       placeholder="e.g. Academic Coordinator"
                       value={newMember.role}
                       onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                   <div>
@@ -900,7 +950,7 @@ export default function AdminPage() {
                       placeholder="Leave blank or enter name"
                       value={newMember.name}
                       onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                   <div>
@@ -912,7 +962,7 @@ export default function AdminPage() {
                       placeholder="e.g. M.Sc., B.Ed., Ph.D."
                       value={newMember.qualification}
                       onChange={(e) => setNewMember({ ...newMember, qualification: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                   <div>
@@ -924,7 +974,7 @@ export default function AdminPage() {
                       placeholder="e.g. 15+ Years in CBSE Administration"
                       value={newMember.experience}
                       onChange={(e) => setNewMember({ ...newMember, experience: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                   <div>
@@ -936,7 +986,7 @@ export default function AdminPage() {
                       placeholder="e.g. principal@gdpublicschool.edu.in"
                       value={newMember.email}
                       onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                   <div className="sm:col-span-3">
@@ -948,7 +998,7 @@ export default function AdminPage() {
                       placeholder="Enter a short bio or desk message for parents and students..."
                       value={newMember.bio}
                       onChange={(e) => setNewMember({ ...newMember, bio: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                     />
                   </div>
                 </div>
@@ -1040,7 +1090,7 @@ export default function AdminPage() {
                               )
                             )
                           }
-                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500 font-semibold"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                         />
                       </div>
 
@@ -1059,7 +1109,7 @@ export default function AdminPage() {
                               )
                             )
                           }
-                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500 font-semibold text-slate-800"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                         />
                       </div>
                     </div>
@@ -1082,7 +1132,7 @@ export default function AdminPage() {
                               )
                             )
                           }
-                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                         />
                       </div>
 
@@ -1103,7 +1153,7 @@ export default function AdminPage() {
                               )
                             )
                           }
-                          className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                          className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                         />
                       </div>
                     </div>
@@ -1123,7 +1173,7 @@ export default function AdminPage() {
                             )
                           )
                         }
-                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                       />
                     </div>
 
@@ -1142,7 +1192,7 @@ export default function AdminPage() {
                             )
                           )
                         }
-                        className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 shadow-sm"
                       />
                     </div>
 
@@ -1239,7 +1289,7 @@ export default function AdminPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by parent name, mobile, email, grade, or query..."
-                  className="w-full pl-10 pr-12 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full pl-10 pr-12 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs focus:ring-2 focus:ring-sky-500 focus:outline-none shadow-sm"
                 />
                 {searchQuery && (
                   <button
@@ -1580,9 +1630,9 @@ export default function AdminPage() {
                   value={school.announcementBadge || ''}
                   onChange={(e) => setSchool({ ...school, announcementBadge: e.target.value })}
                   placeholder="e.g. Admissions 2025–26"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   Shown in the glowing cyan pill at the start of the strip (e.g. <em>Admissions 2025–26</em>, <em>Annual Exam 2025</em>, <em>Notice</em>).
                 </p>
               </div>
@@ -1596,9 +1646,9 @@ export default function AdminPage() {
                   value={school.phone || ''}
                   onChange={(e) => setSchool({ ...school, phone: e.target.value })}
                   placeholder="+91 98765 43210 / +91 12345 67890"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   Clicking this on the homepage allows visitors to immediately call school helpline.
                 </p>
               </div>
@@ -1612,9 +1662,9 @@ export default function AdminPage() {
                   value={school.announcementText || ''}
                   onChange={(e) => setSchool({ ...school, announcementText: e.target.value })}
                   placeholder="e.g. 🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-slate-500 mt-1 font-medium">
                   This text scrolls continuously across the marquee ticker on desktop and is highlighted on mobile devices.
                 </p>
               </div>
@@ -1720,7 +1770,7 @@ export default function AdminPage() {
                   value={school.board}
                   onChange={(e) => setSchool({ ...school, board: e.target.value })}
                   placeholder="e.g. CBSE Affiliated"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1733,7 +1783,7 @@ export default function AdminPage() {
                   value={school.type}
                   onChange={(e) => setSchool({ ...school, type: e.target.value })}
                   placeholder="e.g. Co-Educational English Medium"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1746,7 +1796,7 @@ export default function AdminPage() {
                   value={school.established}
                   onChange={(e) => setSchool({ ...school, established: e.target.value })}
                   placeholder="e.g. 2008"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1759,7 +1809,7 @@ export default function AdminPage() {
                   value={school.timings}
                   onChange={(e) => setSchool({ ...school, timings: e.target.value })}
                   placeholder="e.g. 08:00 AM - 02:00 PM"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1772,7 +1822,7 @@ export default function AdminPage() {
                   value={school.phone}
                   onChange={(e) => setSchool({ ...school, phone: e.target.value })}
                   placeholder="+91 98765 43210 / +91 12345 67890"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1785,7 +1835,7 @@ export default function AdminPage() {
                   value={school.email}
                   onChange={(e) => setSchool({ ...school, email: e.target.value })}
                   placeholder="info@gdpublicschool.edu.in"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1798,7 +1848,7 @@ export default function AdminPage() {
                   value={school.address}
                   onChange={(e) => setSchool({ ...school, address: e.target.value })}
                   placeholder="Campus Address, City, State, PIN"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1811,7 +1861,7 @@ export default function AdminPage() {
                   value={school.heroDescription}
                   onChange={(e) => setSchool({ ...school, heroDescription: e.target.value })}
                   placeholder="Short introductory overview displayed prominently at the top of the homepage"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:outline-none shadow-sm"
                 />
               </div>
 
@@ -1834,23 +1884,23 @@ export default function AdminPage() {
                 </div>
                 <div className="grid sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Badge Tag</label>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Badge Tag</label>
                     <input
                       type="text"
                       value={school.announcementBadge || ''}
                       onChange={(e) => setSchool({ ...school, announcementBadge: e.target.value })}
                       placeholder="e.g. Admissions 2025–26"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs shadow-sm"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Marquee Ticker Text</label>
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Marquee Ticker Text</label>
                     <input
                       type="text"
                       value={school.announcementText || ''}
                       onChange={(e) => setSchool({ ...school, announcementText: e.target.value })}
                       placeholder="e.g. 🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-xs shadow-sm"
                     />
                   </div>
                 </div>
@@ -1892,7 +1942,7 @@ export default function AdminPage() {
                   value={stats.students}
                   onChange={(e) => setStats({ ...stats, students: e.target.value })}
                   placeholder="e.g. 1,500+"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
 
@@ -1905,7 +1955,7 @@ export default function AdminPage() {
                   value={stats.teachers}
                   onChange={(e) => setStats({ ...stats, teachers: e.target.value })}
                   placeholder="e.g. 75+"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
 
@@ -1918,7 +1968,7 @@ export default function AdminPage() {
                   value={stats.years}
                   onChange={(e) => setStats({ ...stats, years: e.target.value })}
                   placeholder="e.g. 16+"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
 
@@ -1931,7 +1981,7 @@ export default function AdminPage() {
                   value={stats.classes}
                   onChange={(e) => setStats({ ...stats, classes: e.target.value })}
                   placeholder="e.g. Nur to 12th"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
             </div>
@@ -1967,7 +2017,7 @@ export default function AdminPage() {
                     value={mediaCaption}
                     onChange={(e) => setMediaCaption(e.target.value)}
                     placeholder="e.g. Annual Sports Day 2025"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                   />
                 </div>
 
@@ -2065,7 +2115,7 @@ export default function AdminPage() {
                   value={newNotice.title}
                   onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
                   placeholder="e.g. Schedule for Quarterly Formative Assessments"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
 
@@ -2079,7 +2129,7 @@ export default function AdminPage() {
                   value={newNotice.content}
                   onChange={(e) => setNewNotice({ ...newNotice, content: e.target.value })}
                   placeholder="Detailed instructions for students, parents, and guardians..."
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold placeholder:text-slate-400 text-sm focus:ring-2 focus:ring-sky-500 shadow-sm"
                 />
               </div>
 

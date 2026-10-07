@@ -71,6 +71,19 @@ body {
 .login-form { display: flex; flex-direction: column; gap: 16px; text-align: left; }
 .login-hint { color: var(--red); font-size: .82rem; text-align: center; min-height: 18px; }
 
+/* Global Input / Textarea styling for Admin */
+input, textarea, select {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+input::placeholder, textarea::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 0.85 !important;
+}
+
 /* ===== ADMIN LAYOUT ===== */
 .admin-layout {
   display: grid;

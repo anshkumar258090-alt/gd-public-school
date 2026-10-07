@@ -34,6 +34,49 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #38bdf8;
   }
+
+}
+
+/* ==========================================================================
+   GLOBAL FORM CONTROLS VISIBILITY FIX
+   Ensures all input, textarea, and select text is dark, crisp, and clearly visible
+   ========================================================================== */
+input,
+textarea,
+select {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0284c7 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 0.85 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Specific styling for white-text inputs (e.g. Contact form on dark homepage) */
+input.text-white,
+textarea.text-white,
+select.text-white {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #38bdf8 !important;
+}
+
+input.text-white::placeholder,
+textarea.text-white::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  opacity: 0.8 !important;
 }
 
 /* Glassmorphism helpers */
