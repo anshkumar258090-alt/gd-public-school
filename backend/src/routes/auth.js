@@ -6,13 +6,14 @@ const router = express.Router();
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  if (
-    username === process.env.ADMIN_USERNAME &&
-    password === process.env.ADMIN_PASSWORD
-  ) {
+  const adminUser = process.env.ADMIN_USERNAME || 'admin';
+  const adminPass = process.env.ADMIN_PASSWORD || 'gdps2024';
+  const jwtSecret = process.env.JWT_SECRET || 'gdps_jwt_secret_dev_key_2024';
+
+  if (username === adminUser && password === adminPass) {
     const token = jwt.sign(
       { username, role: 'admin' },
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '7d' }
     );
     res.json({ success: true, token, username });
@@ -29,7 +30,8 @@ router.get('/verify', (req, res) => {
   }
   try {
     const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || 'gdps_jwt_secret_dev_key_2024';
+    jwt.verify(token, jwtSecret);
     res.json({ valid: true });
   } catch {
     res.status(401).json({ valid: false });
