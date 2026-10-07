@@ -140,8 +140,8 @@ export default function Contact({ school }: ContactProps) {
 
           {/* Admission Enquiry Form */}
           <div className="lg:col-span-7">
-            <div className="bg-[#0e1629]/90 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-white/[0.1] shadow-2xl">
-              <h3 className="text-2xl font-bold text-white mb-2">Request Admission Information</h3>
+            <div className="bg-[#0e1629]/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-5 sm:p-10 border border-white/[0.1] shadow-2xl">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Request Admission Information</h3>
               <p className="text-sm text-slate-300 mb-6">
                 Fill out the quick form below and our counselor will call you within 24 hours.
               </p>

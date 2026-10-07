@@ -606,34 +606,34 @@ export default function AdminPage() {
       `}} />
       {/* Top Admin Header */}
       <header className="bg-white border-b border-sky-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-sm shrink-0">
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h1 className="font-extrabold text-slate-900 text-base leading-tight">
+              <h1 className="font-extrabold text-slate-900 text-sm sm:text-base leading-tight">
                 GD Public School
               </h1>
-              <span className="text-[11px] text-sky-600 font-bold uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] text-sky-600 font-bold uppercase tracking-wider block">
                 Admin Control Dashboard
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition border border-sky-200"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold transition border border-sky-200"
             >
-              <span>View Website</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>Website</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </Link>
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition border border-rose-200"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition border border-rose-200"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Logout</span>
@@ -661,38 +661,38 @@ export default function AdminPage() {
       )}
 
       {/* Main Admin Workspace */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 w-full flex-1">
         {/* Top KPI Quick Dashboard */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-6">
           <div
             onClick={() => setActiveTab('enquiries')}
-            className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
               activeTab === 'enquiries'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
                   activeTab === 'enquiries'
                     ? 'bg-white/20 text-white'
                     : 'bg-rose-50 text-rose-600 border border-rose-100'
                 }`}
               >
-                <Inbox className="w-5 h-5" />
+                <Inbox className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
                   Admission Leads
                 </span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-lg sm:text-xl font-black">
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
+                  <span className="text-base sm:text-xl font-black">
                     {enquiries.length}
                   </span>
                   {enquiries.filter((e) => e.status === 'new').length > 0 && (
                     <span
-                      className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                      className={`text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full ${
                         activeTab === 'enquiries'
                           ? 'bg-white text-rose-600'
                           : 'bg-rose-500 text-white animate-pulse'
@@ -708,27 +708,27 @@ export default function AdminPage() {
 
           <div
             onClick={() => setActiveTab('team')}
-            className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
               activeTab === 'team'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
                   activeTab === 'team'
                     ? 'bg-white/20 text-white'
                     : 'bg-sky-50 text-sky-600 border border-sky-100'
                 }`}
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
                   Leadership Staff
                 </span>
-                <span className="text-lg sm:text-xl font-black block mt-0.5">
+                <span className="text-base sm:text-xl font-black block mt-0.5">
                   {team.length} Positions
                 </span>
               </div>
@@ -737,27 +737,27 @@ export default function AdminPage() {
 
           <div
             onClick={() => setActiveTab('media')}
-            className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
               activeTab === 'media'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
                   activeTab === 'media'
                     ? 'bg-white/20 text-white'
                     : 'bg-sky-50 text-sky-600 border border-sky-100'
                 }`}
               >
-                <Camera className="w-5 h-5" />
+                <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
                   Campus Gallery
                 </span>
-                <span className="text-lg sm:text-xl font-black block mt-0.5">
+                <span className="text-base sm:text-xl font-black block mt-0.5">
                   {media.length} Photos
                 </span>
               </div>
@@ -766,27 +766,27 @@ export default function AdminPage() {
 
           <div
             onClick={() => setActiveTab('notices')}
-            className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
               activeTab === 'notices'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
                   activeTab === 'notices'
                     ? 'bg-white/20 text-white'
                     : 'bg-sky-50 text-sky-600 border border-sky-100'
                 }`}
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
                   Notice Board
                 </span>
-                <span className="text-lg sm:text-xl font-black block mt-0.5">
+                <span className="text-base sm:text-xl font-black block mt-0.5">
                   {notices.length} Circulars
                 </span>
               </div>
@@ -794,8 +794,8 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-slate-200">
+        {/* Navigation Tabs (Mobile touch-friendly horizontal scroll) */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 border-b border-slate-200 no-scrollbar touch-pan-x">
           <button
             onClick={() => setActiveTab('team')}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
@@ -1016,7 +1016,7 @@ export default function AdminPage() {
               {team.map((member) => (
                 <div
                   key={member._id}
-                  className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm flex flex-col md:flex-row gap-6 items-start"
+                  className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-sky-100 shadow-sm flex flex-col md:flex-row gap-5 sm:gap-6 items-start"
                 >
                   {/* Photo upload box */}
                   <div className="flex flex-col items-center gap-2 shrink-0 w-full md:w-40">
@@ -1367,7 +1367,7 @@ export default function AdminPage() {
                   .map((item) => (
                     <div
                       key={item._id}
-                      className={`bg-white rounded-3xl p-6 border shadow-sm transition-all duration-200 flex flex-col justify-between space-y-4 ${
+                      className={`bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border shadow-sm transition-all duration-200 flex flex-col justify-between space-y-4 ${
                         item.status === 'new'
                           ? 'border-sky-300 ring-2 ring-sky-100'
                           : 'border-slate-200'

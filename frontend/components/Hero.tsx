@@ -25,7 +25,7 @@ interface HeroProps {
 
 export default function Hero({ school, stats }: HeroProps) {
   return (
-    <section id="hero" className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 text-white pt-28 sm:pt-36 pb-20 md:pb-28">
+    <section id="hero" className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 text-white pt-24 sm:pt-36 pb-16 md:pb-28">
       {/* Aurora Ambient Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none overflow-hidden">
         <div className="absolute -top-20 left-1/4 w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[120px]"></div>
@@ -40,22 +40,22 @@ export default function Hero({ school, stats }: HeroProps) {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
           {/* Left Column: Heading & Description */}
-          <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
+          <div className="lg:col-span-7 space-y-6 sm:space-y-7 text-center lg:text-left">
             
             {/* Top pill badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 text-xs sm:text-sm font-semibold shadow-[0_0_20px_rgba(6,182,212,0.2)] backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-500/30 text-cyan-300 text-xs sm:text-sm font-semibold shadow-[0_0_20px_rgba(6,182,212,0.2)] backdrop-blur-md">
               <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>Admissions Open for Session 2025–26</span>
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
+              <span>Admissions Open 2025–26</span>
               <span className="hidden sm:inline text-cyan-500/60">•</span>
               <span className="hidden sm:inline text-xs text-slate-300">CBSE Affiliated</span>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
               Empowering Minds to{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-300 block sm:inline">
                 Lead Tomorrow
@@ -205,54 +205,54 @@ export default function Hero({ school, stats }: HeroProps) {
         </div>
 
         {/* Dynamic Stats Strip with Dark Glass Luxury Design */}
-        <div className="mt-16 sm:mt-20">
-          <div className="bg-[#0b1120]/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/[0.1] grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.08]">
+        <div className="mt-12 sm:mt-20">
+          <div className="bg-[#0b1120]/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl border border-white/[0.1] grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
             
-            <div className="flex items-center gap-4 pt-4 sm:pt-0 sm:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
-                <Users className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 sm:gap-4 p-2 sm:p-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {stats.students || '1,500+'}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-slate-400">Active Students</div>
+                <div className="text-[11px] sm:text-sm font-medium text-slate-400">Active Students</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 pt-4 sm:pt-0 sm:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
-                <GraduationCap className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 sm:gap-4 p-2 sm:p-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {stats.teachers || '75+'}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-slate-400">Qualified Educators</div>
+                <div className="text-[11px] sm:text-sm font-medium text-slate-400">Qualified Educators</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 pt-4 sm:pt-0 sm:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                <Calendar className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 sm:gap-4 p-2 sm:p-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {stats.years || '16+'}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-slate-400">Years of Legacy</div>
+                <div className="text-[11px] sm:text-sm font-medium text-slate-400">Years of Legacy</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 pt-4 sm:pt-0 sm:px-4">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
-                <BookOpen className="w-6 h-6" />
+            <div className="flex items-center gap-2.5 sm:gap-4 p-2 sm:p-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-teal-500/15 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {stats.classes || 'Nur to 12th'}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-slate-400">Academic Grades</div>
+                <div className="text-[11px] sm:text-sm font-medium text-slate-400">Academic Grades</div>
               </div>
             </div>
 

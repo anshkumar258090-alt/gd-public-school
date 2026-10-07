@@ -132,17 +132,17 @@ export default function Navbar({ school }: NavbarProps) {
       )}
 
       {/* 2. FLOATING PILL NAVBAR (Floats below the announcement strip with clean spacing) */}
-      <div className={`w-full flex justify-center px-3 sm:px-6 transition-all duration-300 ${isAnnounceActive ? 'pt-2.5 sm:pt-3' : 'pt-3 sm:pt-4'}`}>
+      <div className={`w-full flex justify-center px-2.5 sm:px-6 transition-all duration-300 ${isAnnounceActive ? 'pt-2 sm:pt-3' : 'pt-2.5 sm:pt-4'}`}>
         <div 
-          className={`pointer-events-auto w-full max-w-6xl rounded-full transition-all duration-300 flex items-center justify-between px-3.5 sm:px-5 py-2 sm:py-2.5 shadow-2xl ${
+          className={`pointer-events-auto w-full max-w-6xl rounded-full transition-all duration-300 flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2.5 shadow-2xl ${
             isScrolled
-              ? 'bg-[#070b16]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15)] py-2'
+              ? 'bg-[#070b16]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15)] py-1.5 sm:py-2'
               : 'bg-[#090e1d]/85 backdrop-blur-xl border border-white/[0.10] shadow-[0_15px_40px_rgba(0,0,0,0.45),0_0_20px_rgba(56,189,248,0.1)]'
           }`}
         >
           {/* LEFT: Brand / Logo */}
-          <Link href="#hero" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 p-[1.5px] shadow-[0_0_15px_rgba(56,189,248,0.4)] group-hover:shadow-[0_0_22px_rgba(6,182,212,0.7)] transition-all">
+          <Link href="#hero" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 p-[1.5px] shadow-[0_0_15px_rgba(56,189,248,0.4)] group-hover:shadow-[0_0_22px_rgba(6,182,212,0.7)] transition-all shrink-0">
               <div className="w-full h-full rounded-full bg-[#090e1d] flex items-center justify-center overflow-hidden">
                 {school.logoUrl ? (
                   <Image
@@ -153,12 +153,12 @@ export default function Navbar({ school }: NavbarProps) {
                     className="object-contain p-0.5"
                   />
                 ) : (
-                  <GraduationCap className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
                 )}
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm sm:text-base font-extrabold tracking-tight text-white group-hover:text-cyan-300 transition-colors">
+              <span className="text-xs sm:text-base font-extrabold tracking-tight text-white group-hover:text-cyan-300 transition-colors leading-tight">
                 GD <span className="text-cyan-400">PUBLIC SCHOOL</span>
               </span>
               <span className="text-[9px] font-semibold tracking-widest uppercase text-slate-400 group-hover:text-cyan-300/80 -mt-0.5 transition-colors hidden sm:block">
@@ -167,7 +167,7 @@ export default function Navbar({ school }: NavbarProps) {
             </div>
           </Link>
 
-          {/* CENTER: Navigation Capsule with Active Pill Indicator (Matches reference image) */}
+          {/* CENTER: Navigation Capsule with Active Pill Indicator */}
           <nav className="hidden lg:flex items-center gap-1 bg-white/[0.04] border border-white/[0.09] rounded-full p-1 shadow-inner backdrop-blur-md">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
@@ -188,16 +188,17 @@ export default function Navbar({ school }: NavbarProps) {
             })}
           </nav>
 
-          {/* RIGHT: Glowing Neon CTA Button */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* RIGHT: Glowing Neon CTA Button & Hamburger */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Glowing Gradient Pill CTA: Apply / Enquire */}
             <a
               href="#contact"
-              className="relative group overflow-hidden px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:shadow-[0_0_32px_rgba(6,182,212,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-1.5"
+              className="relative group overflow-hidden px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 shadow-[0_0_18px_rgba(6,182,212,0.55)] hover:shadow-[0_0_32px_rgba(6,182,212,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-1 sm:gap-1.5 shrink-0"
             >
-              <span className="relative z-10 flex items-center gap-1.5">
-                <span>Enquire Now</span>
-                <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
+              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5">
+                <span>Enquire</span>
+                <span className="hidden sm:inline">Now</span>
+                <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
@@ -205,7 +206,7 @@ export default function Navbar({ school }: NavbarProps) {
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/[0.08] transition"
+              className="lg:hidden p-1.5 sm:p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/[0.08] active:bg-white/[0.15] transition"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 text-cyan-400" /> : <Menu className="w-5 h-5" />}
@@ -216,8 +217,8 @@ export default function Navbar({ school }: NavbarProps) {
 
       {/* MOBILE FLOATING FROSTED DRAWER */}
       {mobileMenuOpen && (
-        <div className="pointer-events-auto px-3 sm:px-6 pt-2 lg:hidden">
-          <div className="max-w-6xl mx-auto rounded-3xl bg-[#090e1d]/95 backdrop-blur-2xl border border-white/[0.12] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(6,182,212,0.15)] space-y-2 animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="pointer-events-auto px-2.5 sm:px-6 pt-2 lg:hidden">
+          <div className="max-w-6xl mx-auto rounded-3xl bg-[#090e1d]/98 backdrop-blur-2xl border border-white/[0.14] p-4 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(6,182,212,0.2)] space-y-2 animate-in fade-in slide-in-from-top-3 duration-200">
             <div className="flex flex-col gap-1">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
@@ -250,6 +251,25 @@ export default function Navbar({ school }: NavbarProps) {
               >
                 Apply for Admission 2025–26
               </a>
+
+              {school.phone && (
+                <a
+                  href={`tel:${school.phone.split('/')[0].trim()}`}
+                  className="w-full text-center py-2.5 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center gap-2"
+                >
+                  <Phone className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Helpline: {school.phone.split('/')[0].trim()}</span>
+                </a>
+              )}
+
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-center text-[11px] text-slate-400 hover:text-cyan-300 py-1.5 flex items-center justify-center gap-1 font-medium transition"
+              >
+                <Lock className="w-3 h-3 text-slate-500" />
+                <span>Admin Login Portal</span>
+              </Link>
             </div>
           </div>
         </div>
