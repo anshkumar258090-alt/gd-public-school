@@ -16,6 +16,9 @@ const initialData = {
     logoUrl: '',
     heroDescription:
       'Dedicated to nurturing curious minds, strong values, and visionary leaders through holistic and quality education with modern facilities, smart labs, and sports arenas.',
+    announcementBadge: 'Admissions 2025–26',
+    announcementText: '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)',
+    showAnnouncement: true,
   },
   stats: {
     students: '1,500+',

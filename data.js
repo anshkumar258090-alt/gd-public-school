@@ -13,6 +13,9 @@ const DEFAULT_DATA = {
     type: '',
     established: '',
     timings: '',
+    announcementBadge: 'Admissions 2025–26',
+    announcementText: 'Admissions Open 2025–26',
+    showAnnouncement: true,
   },
   stats: {
     students: '',

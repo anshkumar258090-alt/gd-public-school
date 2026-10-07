@@ -38,7 +38,21 @@ function loadAllData() {
   setText('schoolEstablished', db.school.established || '–');
   setText('schoolTimings', db.school.timings || '–');
 
-  // ANNOUNCEMENT BAR phone
+  // ANNOUNCEMENT BAR
+  const announceBar = document.getElementById('announceBar');
+  if (db.school.showAnnouncement === false) {
+    if (announceBar) announceBar.style.display = 'none';
+  } else {
+    if (announceBar) announceBar.style.display = '';
+    const navAnnounceBadge = document.getElementById('navAnnounceBadge');
+    if (navAnnounceBadge && db.school.announcementBadge) {
+      navAnnounceBadge.textContent = db.school.announcementBadge;
+    }
+    const navAnnounceText = document.getElementById('navAnnounceText');
+    if (navAnnounceText && db.school.announcementText) {
+      navAnnounceText.textContent = db.school.announcementText;
+    }
+  }
   const navPhone = document.getElementById('navPhone');
   if (navPhone) navPhone.textContent = db.school.phone || '–';
 

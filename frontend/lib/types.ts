@@ -10,6 +10,9 @@ export interface SchoolInfo {
   logoUrl: string;
   logoPublicId?: string;
   heroDescription: string;
+  announcementBadge?: string;
+  announcementText?: string;
+  showAnnouncement?: boolean;
 }
 
 export interface SchoolStats {

@@ -11,6 +11,9 @@ const schoolSchema = new mongoose.Schema({
   logoUrl: { type: String, default: '' },
   logoPublicId: { type: String, default: '' },
   heroDescription: { type: String, default: '' },
+  announcementBadge: { type: String, default: 'Admissions 2025–26' },
+  announcementText: { type: String, default: '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)' },
+  showAnnouncement: { type: Boolean, default: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model('School', schoolSchema);

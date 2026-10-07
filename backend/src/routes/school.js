@@ -25,11 +25,16 @@ router.get('/', async (req, res) => {
 
 // PUT /api/school — admin only
 router.put('/', protect, async (req, res) => {
-  const { address, phone, email, board, type, established, timings, heroDescription } = req.body;
+  const { address, phone, email, board, type, established, timings, heroDescription, announcementBadge, announcementText, showAnnouncement } = req.body;
   if (isMongo()) {
     let school = await School.findOne();
     if (!school) school = new School();
-    Object.assign(school, { address, phone, email, board, type, established, timings, heroDescription });
+    Object.assign(school, {
+      address, phone, email, board, type, established, timings, heroDescription,
+      ...(announcementBadge !== undefined && { announcementBadge }),
+      ...(announcementText !== undefined && { announcementText }),
+      ...(showAnnouncement !== undefined && { showAnnouncement }),
+    });
     await school.save();
     return res.json({ success: true, data: school });
   }
@@ -45,6 +50,9 @@ router.put('/', protect, async (req, res) => {
     ...(established !== undefined && { established }),
     ...(timings !== undefined && { timings }),
     ...(heroDescription !== undefined && { heroDescription }),
+    ...(announcementBadge !== undefined && { announcementBadge }),
+    ...(announcementText !== undefined && { announcementText }),
+    ...(showAnnouncement !== undefined && { showAnnouncement }),
   };
   writeDB(db);
   res.json({ success: true, data: db.school });

@@ -80,6 +80,10 @@ function loadAdminData() {
   setVal('g_type', db.school.type);
   setVal('g_established', db.school.established);
   setVal('g_timings', db.school.timings);
+  setVal('g_announcementBadge', db.school.announcementBadge || 'Admissions 2025–26');
+  setVal('g_announcementText', db.school.announcementText || 'Admissions Open 2025–26');
+  const showAnnounceEl = document.getElementById('g_showAnnouncement');
+  if (showAnnounceEl) showAnnounceEl.checked = db.school.showAnnouncement !== false;
 
   // Stats
   setVal('s_students', db.stats.students);
@@ -130,8 +134,12 @@ function saveGeneral() {
   db.school.type = getVal('g_type');
   db.school.established = getVal('g_established');
   db.school.timings = getVal('g_timings');
+  db.school.announcementBadge = getVal('g_announcementBadge');
+  db.school.announcementText = getVal('g_announcementText');
+  const showAnnounceEl = document.getElementById('g_showAnnouncement');
+  db.school.showAnnouncement = showAnnounceEl ? showAnnounceEl.checked : true;
   saveDB(db);
-  showMsg('msg-general', '✅ General info saved successfully!');
+  showMsg('msg-general', '✅ General info & Announcement bar saved successfully!');
 }
 
 function saveStats() {

@@ -84,7 +84,7 @@ export default function AdminPage() {
 
   // Active dashboard tab
   const [activeTab, setActiveTab] = useState<
-    'team' | 'enquiries' | 'branding' | 'general' | 'stats' | 'media' | 'notices'
+    'team' | 'enquiries' | 'announcement' | 'branding' | 'general' | 'stats' | 'media' | 'notices'
   >('team');
 
   // Status message
@@ -773,6 +773,18 @@ export default function AdminPage() {
                 {enquiries.filter((e) => e.status === 'new').length} New
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('announcement')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+              activeTab === 'announcement'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>Top Announcement Bar</span>
           </button>
 
           <button
@@ -1501,6 +1513,190 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* TAB: TOP ANNOUNCEMENT & MARQUEE BAR */}
+        {activeTab === 'announcement' && (
+          <form
+            onSubmit={handleSaveGeneral}
+            className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-6"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-200 uppercase tracking-wider">
+                    Header Strip
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-900">Top Announcement & Ticker Bar</h3>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Customize the scrolling notification ticker, badge tag, and admissions alert at the very top of your website.
+                </p>
+              </div>
+
+              {/* Show/Hide Toggle */}
+              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl">
+                <span className="text-xs font-bold text-slate-700">Display Announcement Bar:</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={school.showAnnouncement !== false}
+                    onChange={(e) => setSchool({ ...school, showAnnouncement: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+            </div>
+
+            {/* Live Interactive Preview */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                Live Website Header Preview
+              </span>
+              <div className="rounded-2xl overflow-hidden border border-slate-800 bg-[#050811] text-slate-300 py-2.5 px-4 shadow-xl">
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 shrink-0 bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-cyan-400/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <Sparkles className="w-3 h-3 text-cyan-300" />
+                    <span>{school.announcementBadge || 'Admissions 2025–26'}</span>
+                  </div>
+                  <div className="truncate flex-1 text-slate-200 text-xs font-medium">
+                    {school.announcementText || '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)'}
+                    <span className="text-slate-500 mx-2">•</span>
+                    <span className="text-cyan-400">Helpline: {school.phone || '+91 98765 43210'}</span>
+                  </div>
+                  <span className="text-slate-500 text-xs cursor-not-allowed">✕</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Inputs */}
+            <div className="grid sm:grid-cols-2 gap-5 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Badge Tag / Pill Label
+                </label>
+                <input
+                  type="text"
+                  value={school.announcementBadge || ''}
+                  onChange={(e) => setSchool({ ...school, announcementBadge: e.target.value })}
+                  placeholder="e.g. Admissions 2025–26"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Shown in the glowing cyan pill at the start of the strip (e.g. <em>Admissions 2025–26</em>, <em>Annual Exam 2025</em>, <em>Notice</em>).
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Helpline Numbers (Shown in Marquee)
+                </label>
+                <input
+                  type="text"
+                  value={school.phone || ''}
+                  onChange={(e) => setSchool({ ...school, phone: e.target.value })}
+                  placeholder="+91 98765 43210 / +91 12345 67890"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Clicking this on the homepage allows visitors to immediately call school helpline.
+                </p>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Main Announcement Ticker Text
+                </label>
+                <textarea
+                  rows={2}
+                  value={school.announcementText || ''}
+                  onChange={(e) => setSchool({ ...school, announcementText: e.target.value })}
+                  placeholder="e.g. 🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  This text scrolls continuously across the marquee ticker on desktop and is highlighted on mobile devices.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Templates / Presets */}
+            <div className="p-4 bg-sky-50/60 rounded-2xl border border-sky-100 space-y-2">
+              <span className="text-xs font-bold text-sky-900 block">
+                ⚡ Quick Presets (Click to apply):
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSchool({
+                      ...school,
+                      announcementBadge: 'Admissions 2025–26',
+                      announcementText:
+                        '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th) — Limited Seats Available!',
+                    })
+                  }
+                  className="px-3 py-1.5 bg-white hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-medium transition"
+                >
+                  🎓 Admissions Open 2025–26
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSchool({
+                      ...school,
+                      announcementBadge: 'Annual Exams',
+                      announcementText:
+                        '📢 Annual Term Examination Datesheet & Admit Cards are now published on the portal.',
+                    })
+                  }
+                  className="px-3 py-1.5 bg-white hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-medium transition"
+                >
+                  📝 Exam Schedule Notice
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSchool({
+                      ...school,
+                      announcementBadge: 'Sports Meet',
+                      announcementText:
+                        '🏆 Annual Sports Meet & Cultural Fiesta scheduled this month. Parents are cordially invited!',
+                    })
+                  }
+                  className="px-3 py-1.5 bg-white hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-medium transition"
+                >
+                  🏆 Annual Sports Fiesta
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSchool({
+                      ...school,
+                      announcementBadge: 'Vacation Notice',
+                      announcementText:
+                        '☀️ School will remain closed for Summer Vacation from 15th May to 30th June.',
+                    })
+                  }
+                  className="px-3 py-1.5 bg-white hover:bg-sky-100 text-sky-800 border border-sky-200 rounded-xl text-xs font-medium transition"
+                >
+                  ☀️ Vacation Notice
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <button
+                type="submit"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-sm transition shadow-md"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Announcement Bar</span>
+              </button>
+            </div>
+          </form>
+        )}
+
         {/* TAB 3: GENERAL INFO & CONTACT */}
         {activeTab === 'general' && (
           <form
@@ -1617,6 +1813,47 @@ export default function AdminPage() {
                   placeholder="Short introductory overview displayed prominently at the top of the homepage"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-sky-500"
                 />
+              </div>
+
+              {/* Top Announcement Bar quick settings */}
+              <div className="sm:col-span-2 p-4 bg-sky-50/70 border border-sky-100 rounded-2xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-sky-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
+                    <span>Top Announcement / Marquee Bar Settings</span>
+                  </span>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={school.showAnnouncement !== false}
+                      onChange={(e) => setSchool({ ...school, showAnnouncement: e.target.checked })}
+                      className="rounded text-sky-600 focus:ring-sky-500"
+                    />
+                    <span>Show on Website</span>
+                  </label>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Badge Tag</label>
+                    <input
+                      type="text"
+                      value={school.announcementBadge || ''}
+                      onChange={(e) => setSchool({ ...school, announcementBadge: e.target.value })}
+                      placeholder="e.g. Admissions 2025–26"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">Marquee Ticker Text</label>
+                    <input
+                      type="text"
+                      value={school.announcementText || ''}
+                      onChange={(e) => setSchool({ ...school, announcementText: e.target.value })}
+                      placeholder="e.g. 🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

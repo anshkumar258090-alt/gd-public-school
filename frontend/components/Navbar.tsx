@@ -64,24 +64,26 @@ export default function Navbar({ school }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isAnnounceActive = showAnnounce && school.showAnnouncement !== false;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300">
       {/* 1. TOP SCROLLING ANNOUNCEMENT STRIP (Fully Visible, Never Covered) */}
-      {showAnnounce && (
+      {isAnnounceActive && (
         <div className="pointer-events-auto w-full bg-[#050811]/95 backdrop-blur-md text-slate-300 text-xs py-1.5 px-3 border-b border-white/[0.08] relative z-50 shadow-sm overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
             {/* Live Status Badge */}
             <div className="shrink-0 flex items-center gap-1.5 bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-cyan-400/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <Sparkles className="w-3 h-3 text-cyan-300" />
-              <span className="uppercase tracking-wider">Admissions 2025–26</span>
+              <span className="uppercase tracking-wider">{school.announcementBadge || 'Admissions 2025–26'}</span>
             </div>
 
             {/* Continuous Marquee Ticker */}
             <div className="overflow-hidden whitespace-nowrap flex-1 relative hidden sm:block">
               <div className="animate-marquee flex items-center gap-8 text-[11px] text-slate-300">
                 <span className="font-semibold text-white">
-                  🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)
+                  {school.announcementText || '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)'}
                 </span>
                 <span className="text-slate-500">•</span>
                 <span className="flex items-center gap-1 text-slate-300">
@@ -102,7 +104,7 @@ export default function Navbar({ school }: NavbarProps) {
 
                 {/* Duplicate for seamless infinite loop */}
                 <span className="font-semibold text-white">
-                  🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)
+                  {school.announcementText || '🎉 Admissions Open for Session 2025–26 (Nursery to Class 12th)'}
                 </span>
                 <span className="text-slate-500">•</span>
                 <span className="flex items-center gap-1 text-slate-300">
@@ -114,7 +116,7 @@ export default function Navbar({ school }: NavbarProps) {
 
             {/* Mobile simplified ticker */}
             <div className="sm:hidden flex-1 text-center truncate text-[11px] text-slate-300 font-medium">
-              <span>Admissions Open (Nur to 12th)</span>
+              <span>{school.announcementText || school.announcementBadge || 'Admissions Open'}</span>
             </div>
 
             {/* Close Announcement */}
@@ -130,7 +132,7 @@ export default function Navbar({ school }: NavbarProps) {
       )}
 
       {/* 2. FLOATING PILL NAVBAR (Floats below the announcement strip with clean spacing) */}
-      <div className={`w-full flex justify-center px-3 sm:px-6 transition-all duration-300 ${showAnnounce ? 'pt-2.5 sm:pt-3' : 'pt-3 sm:pt-4'}`}>
+      <div className={`w-full flex justify-center px-3 sm:px-6 transition-all duration-300 ${isAnnounceActive ? 'pt-2.5 sm:pt-3' : 'pt-3 sm:pt-4'}`}>
         <div 
           className={`pointer-events-auto w-full max-w-6xl rounded-full transition-all duration-300 flex items-center justify-between px-3.5 sm:px-5 py-2 sm:py-2.5 shadow-2xl ${
             isScrolled
