@@ -56,6 +56,9 @@ export default function Hero({ school, stats }: HeroProps) {
 
             {/* Main Title */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-wide uppercase mb-1 sm:mb-2">
+                GD Public School
+              </span>
               Empowering Minds to{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-300 block sm:inline">
                 Lead Tomorrow
