@@ -243,8 +243,60 @@ export function logoutAdmin() {
   }
 }
 
+// ============================================================================
+// GLOBAL CLOUD DATABASE SYNC (Shared in real-time across ALL devices: Phone, PC, Tablet)
+// ============================================================================
+const CLOUD_DB_URL = 'https://rtqcgs4s6w6ojbmc.public.blob.vercel-storage.com/local_db.json';
+
+async function fetchCloudDb(): Promise<any | null> {
+  try {
+    const res = await fetch(`/api/cloud-sync?t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.success && json.data) {
+        return json.data;
+      }
+    }
+  } catch {}
+
+  try {
+    const res = await fetch(`${CLOUD_DB_URL}?t=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('[CloudDb] Fetch error:', err);
+  }
+  return null;
+}
+
+async function syncToCloud(payload: Record<string, any>): Promise<void> {
+  try {
+    await fetch('/api/cloud-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.warn('[CloudSync] Sync error:', err);
+  }
+}
+
 // --- School Info APIs ---
 export async function getSchoolInfo(): Promise<SchoolInfo> {
+  // 1. Check Global Cloud DB first (synced across all devices)
+  const cloud = await fetchCloudDb();
+  if (cloud && cloud.school) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_school', JSON.stringify(cloud.school));
+    }
+    return { ...DEFAULT_SCHOOL, ...cloud.school };
+  }
+
+  // 2. Fallback to API
   const res = await apiFetch<{ success: boolean; data: SchoolInfo }>('/api/school');
   if (res && res.success && res.data) {
     if (typeof window !== 'undefined') {
@@ -253,7 +305,7 @@ export async function getSchoolInfo(): Promise<SchoolInfo> {
     return { ...DEFAULT_SCHOOL, ...res.data };
   }
 
-  // Fallback to local storage if API is unreachable
+  // 3. Fallback to local storage if offline
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_school');
     if (local) {
@@ -267,6 +319,9 @@ export async function getSchoolInfo(): Promise<SchoolInfo> {
 }
 
 export async function updateSchoolInfo(data: Partial<SchoolInfo>) {
+  // Sync to Cloud DB so every device gets the updated values
+  await syncToCloud({ school: data });
+
   const res = await apiFetch<{ success: boolean; data: SchoolInfo }>('/api/school', {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -290,6 +345,7 @@ export async function uploadSchoolLogo(file: File) {
   });
 
   if (res && res.success && res.logoUrl) {
+    await syncToCloud({ school: { logoUrl: res.logoUrl } });
     if (typeof window !== 'undefined') {
       const current = await getSchoolInfo();
       safeSetLocalStorage('gdps_local_school', JSON.stringify({ ...current, logoUrl: res.logoUrl }));
@@ -302,6 +358,7 @@ export async function uploadSchoolLogo(file: File) {
   if (typeof window !== 'undefined') {
     try {
       localDataUrl = await compressImageToBase64(file, 200, 200, 0.8);
+      await syncToCloud({ school: { logoUrl: localDataUrl } });
       const current = await getSchoolInfo();
       safeSetLocalStorage('gdps_local_school', JSON.stringify({ ...current, logoUrl: localDataUrl }));
     } catch (e) {}
@@ -311,6 +368,7 @@ export async function uploadSchoolLogo(file: File) {
 }
 
 export async function deleteSchoolLogo() {
+  await syncToCloud({ school: { logoUrl: '' } });
   if (typeof window !== 'undefined') {
     const current = await getSchoolInfo();
     localStorage.setItem('gdps_local_school', JSON.stringify({ ...current, logoUrl: '' }));
@@ -323,6 +381,14 @@ export async function deleteSchoolLogo() {
 
 // --- Stats APIs ---
 export async function getSchoolStats(): Promise<SchoolStats> {
+  const cloud = await fetchCloudDb();
+  if (cloud && cloud.stats) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_stats', JSON.stringify(cloud.stats));
+    }
+    return { ...DEFAULT_STATS, ...cloud.stats };
+  }
+
   const res = await apiFetch<{ success: boolean; data: SchoolStats }>('/api/stats');
   if (res && res.success && res.data) {
     if (typeof window !== 'undefined') {
@@ -345,6 +411,8 @@ export async function getSchoolStats(): Promise<SchoolStats> {
 }
 
 export async function updateSchoolStats(data: Partial<SchoolStats>) {
+  await syncToCloud({ stats: data });
+
   if (typeof window !== 'undefined') {
     const current = await getSchoolStats();
     const updated = { ...current, ...data };
@@ -361,6 +429,14 @@ export async function updateSchoolStats(data: Partial<SchoolStats>) {
 
 // --- Team APIs ---
 export async function getTeamMembers(): Promise<TeamMember[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.team) && cloud.team.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_team', JSON.stringify(cloud.team));
+    }
+    return cloud.team;
+  }
+
   const res = await apiFetch<{ success: boolean; data: TeamMember[] }>('/api/team');
   if (res && res.success && res.data && res.data.length > 0) {
     if (typeof window !== 'undefined') {
@@ -392,12 +468,7 @@ export async function createTeamMember(data: {
   email?: string;
   order?: number;
 }) {
-  const res = await apiFetch<{ success: boolean; data: TeamMember }>('/api/team', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-
-  const member: TeamMember = res?.data || {
+  const member: TeamMember = {
     _id: 'member_' + Date.now(),
     name: data.name,
     role: data.role,
@@ -410,93 +481,91 @@ export async function createTeamMember(data: {
     isActive: true,
   };
 
+  const team = await getTeamMembers();
+  const updatedTeam = [...team, member];
+  await syncToCloud({ team: updatedTeam });
+
   if (typeof window !== 'undefined') {
-    const team = await getTeamMembers();
-    safeSetLocalStorage('gdps_local_team', JSON.stringify([...team, member]));
+    safeSetLocalStorage('gdps_local_team', JSON.stringify(updatedTeam));
   }
+
+  apiFetch<{ success: boolean; data: TeamMember }>('/api/team', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }).catch(() => {});
 
   return { success: true, data: member };
 }
 
 export async function updateTeamMember(id: string, data: Partial<TeamMember>) {
-  const res = await apiFetch<{ success: boolean; data: TeamMember }>(`/api/team/${id}`, {
+  const team = await getTeamMembers();
+  const updatedTeam = team.map((m) => (m._id === id ? { ...m, ...data } : m));
+  await syncToCloud({ team: updatedTeam });
+
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_team', JSON.stringify(updatedTeam));
+  }
+
+  apiFetch<{ success: boolean; data: TeamMember }>(`/api/team/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
-  });
+  }).catch(() => {});
 
-  if (res && res.success && res.data) {
-    if (typeof window !== 'undefined') {
-      const team = await getTeamMembers();
-      const updated = team.map((m) => (m._id === id ? res.data : m));
-      safeSetLocalStorage('gdps_local_team', JSON.stringify(updated));
-    }
-    return res;
-  }
-
-  // Local fallback if API is unreachable
-  if (typeof window !== 'undefined') {
-    const team = await getTeamMembers();
-    const updated = team.map((m) => (m._id === id ? { ...m, ...data } : m));
-    safeSetLocalStorage('gdps_local_team', JSON.stringify(updated));
-    const member = updated.find((m) => m._id === id);
-    return { success: true, data: member || (data as TeamMember) };
-  }
-
-  return { success: true, data: data as TeamMember };
+  const member = updatedTeam.find((m) => m._id === id);
+  return { success: true, data: member || (data as TeamMember) };
 }
 
 export async function uploadTeamPhoto(id: string, file: File) {
-  const formData = new FormData();
-  formData.append('photo', file);
-
-  const res = await apiFetch<{ success: boolean; data: TeamMember }>(`/api/team/${id}/photo`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (res && res.success && res.data) {
-    if (typeof window !== 'undefined') {
-      const team = await getTeamMembers();
-      const updated = team.map((m) => (m._id === id ? res.data : m));
-      safeSetLocalStorage('gdps_local_team', JSON.stringify(updated));
-    }
-    return res;
-  }
-
-  // Offline / local fallback: compress image to small preview without exceeding localStorage quota
+  // Compress image to clean base64 data url
   let localDataUrl = '';
-  if (typeof window !== 'undefined') {
-    try {
-      localDataUrl = await compressImageToBase64(file, 400, 400, 0.7);
-      const team = await getTeamMembers();
-      const updated = team.map((m) => (m._id === id ? { ...m, photoUrl: localDataUrl } : m));
+  try {
+    localDataUrl = await compressImageToBase64(file, 400, 400, 0.7);
+    const team = await getTeamMembers();
+    const updated = team.map((m) => (m._id === id ? { ...m, photoUrl: localDataUrl } : m));
+    await syncToCloud({ team: updated });
+    if (typeof window !== 'undefined') {
       safeSetLocalStorage('gdps_local_team', JSON.stringify(updated));
-      const member = updated.find((m) => m._id === id);
-      return { success: true, data: member || ({} as TeamMember) };
-    } catch (e) {
-      console.warn('Fallback photo compression failed:', e);
     }
+    const member = updated.find((m) => m._id === id);
+    return { success: true, data: member || ({} as TeamMember) };
+  } catch (e) {
+    console.warn('Photo upload error:', e);
   }
 
   return { success: false, data: {} as TeamMember };
 }
 
 export async function deleteTeamMember(id: string) {
-  const res = await apiFetch<{ success: boolean; message: string }>(`/api/team/${id}`, {
-    method: 'DELETE',
-  });
+  const team = await getTeamMembers();
+  const filtered = team.filter((m) => m._id !== id);
+  await syncToCloud({ team: filtered });
 
   if (typeof window !== 'undefined') {
-    const team = await getTeamMembers();
-    const filtered = team.filter((m) => m._id !== id);
     safeSetLocalStorage('gdps_local_team', JSON.stringify(filtered));
   }
 
-  return res || { success: true, message: 'Member deleted' };
+  apiFetch<{ success: boolean; message: string }>(`/api/team/${id}`, {
+    method: 'DELETE',
+  }).catch(() => {});
+
+  return { success: true, message: 'Member deleted' };
 }
 
 // --- Media Gallery APIs ---
 export async function getMediaGallery(): Promise<MediaItem[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.media) && cloud.media.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_media', JSON.stringify(cloud.media));
+    }
+    return cloud.media;
+  }
+
+  const res = await apiFetch<{ success: boolean; data: MediaItem[] }>('/api/media');
+  if (res && res.success && res.data) {
+    return res.data;
+  }
+
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_media');
     if (local) {
@@ -507,69 +576,57 @@ export async function getMediaGallery(): Promise<MediaItem[]> {
     }
   }
 
-  const res = await apiFetch<{ success: boolean; data: MediaItem[] }>('/api/media');
-  if (res && res.success && res.data) {
-    return res.data;
-  }
   return [];
 }
 
 export async function uploadMediaFiles(files: File[], captions: string[]) {
-  const formData = new FormData();
-  files.forEach((file) => formData.append('files', file));
-  formData.append('captions', JSON.stringify(captions));
-
-  const res = await apiFetch<{ success: boolean; data: MediaItem[] }>('/api/media', {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (res && res.success && res.data) {
-    if (typeof window !== 'undefined') {
-      const current = await getMediaGallery();
-      safeSetLocalStorage('gdps_local_media', JSON.stringify([...res.data, ...current]));
-    }
-    return res;
+  const localItems: MediaItem[] = [];
+  for (let i = 0; i < files.length; i++) {
+    try {
+      const b64 = await compressImageToBase64(files[i], 800, 600, 0.7);
+      localItems.push({
+        _id: 'media_' + Date.now() + '_' + i,
+        url: b64,
+        caption: captions[i] || 'Campus Photo',
+        type: files[i].type.startsWith('video/') ? 'video' : 'image',
+        order: i + 1,
+      });
+    } catch (e) {}
   }
 
-  // Fallback if backend offline
-  const localItems: MediaItem[] = [];
+  const current = await getMediaGallery();
+  const updatedMedia = [...localItems, ...current];
+  await syncToCloud({ media: updatedMedia });
+
   if (typeof window !== 'undefined') {
-    for (let i = 0; i < files.length; i++) {
-      try {
-        const b64 = await compressImageToBase64(files[i], 800, 600, 0.7);
-        localItems.push({
-          _id: 'media_' + Date.now() + '_' + i,
-          url: b64,
-          caption: captions[i] || 'Campus Photo',
-          type: files[i].type.startsWith('video/') ? 'video' : 'image',
-          order: i + 1,
-        });
-      } catch (e) {}
-    }
-    const current = await getMediaGallery();
-    safeSetLocalStorage('gdps_local_media', JSON.stringify([...localItems, ...current]));
+    safeSetLocalStorage('gdps_local_media', JSON.stringify(updatedMedia));
   }
 
   return { success: true, data: localItems };
 }
 
 export async function deleteMediaItem(id: string) {
-  const res = await apiFetch<{ success: boolean; message: string }>(`/api/media/${id}`, {
-    method: 'DELETE',
-  });
+  const media = await getMediaGallery();
+  const filtered = media.filter((m) => m._id !== id);
+  await syncToCloud({ media: filtered });
 
   if (typeof window !== 'undefined') {
-    const media = await getMediaGallery();
-    const filtered = media.filter((m) => m._id !== id);
     safeSetLocalStorage('gdps_local_media', JSON.stringify(filtered));
   }
 
-  return res || { success: true, message: 'Deleted' };
+  return { success: true, message: 'Deleted' };
 }
 
 // --- Notices APIs ---
 export async function getNotices(): Promise<SchoolNotice[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.notices) && cloud.notices.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_notices', JSON.stringify(cloud.notices));
+    }
+    return cloud.notices;
+  }
+
   const res = await apiFetch<{ success: boolean; data: SchoolNotice[] }>('/api/notices');
   if (res && res.success && res.data && res.data.length > 0) {
     if (typeof window !== 'undefined') {
@@ -601,31 +658,32 @@ export async function createNotice(data: { title: string; content: string; date?
     isActive: true,
   };
 
+  const notices = await getNotices();
+  const updatedNotices = [newNotice, ...notices];
+  await syncToCloud({ notices: updatedNotices });
+
   if (typeof window !== 'undefined') {
-    const notices = await getNotices();
-    localStorage.setItem('gdps_local_notices', JSON.stringify([newNotice, ...notices]));
+    localStorage.setItem('gdps_local_notices', JSON.stringify(updatedNotices));
   }
 
-  const res = await apiFetch<{ success: boolean; data: SchoolNotice }>('/api/notices', {
+  apiFetch<{ success: boolean; data: SchoolNotice }>('/api/notices', {
     method: 'POST',
     body: JSON.stringify(data),
-  });
+  }).catch(() => {});
 
-  return res || { success: true, data: newNotice };
+  return { success: true, data: newNotice };
 }
 
 export async function deleteNotice(id: string) {
+  const notices = await getNotices();
+  const filtered = notices.filter((n) => n._id !== id);
+  await syncToCloud({ notices: filtered });
+
   if (typeof window !== 'undefined') {
-    const notices = await getNotices();
-    const filtered = notices.filter((n) => n._id !== id);
     localStorage.setItem('gdps_local_notices', JSON.stringify(filtered));
   }
 
-  const res = await apiFetch<{ success: boolean; message: string }>(`/api/notices/${id}`, {
-    method: 'DELETE',
-  });
-
-  return res || { success: true, message: 'Deleted' };
+  return { success: true, message: 'Deleted' };
 }
 
 // --- Admission Enquiries APIs ---
@@ -633,7 +691,7 @@ export async function submitEnquiry(data: {
   parentName: string;
   phone: string;
   email?: string;
-  studentGrade: string;
+  studentGrade?: string;
   message?: string;
 }) {
   const newEnquiry: AdmissionEnquiry = {
@@ -647,21 +705,26 @@ export async function submitEnquiry(data: {
     createdAt: new Date().toISOString(),
   };
 
+  const current = await getEnquiries();
+  const updated = [newEnquiry, ...current];
+  await syncToCloud({ enquiries: updated });
+
   if (typeof window !== 'undefined') {
-    const local = localStorage.getItem('gdps_local_enquiries');
-    const list = local ? JSON.parse(local) : [];
-    localStorage.setItem('gdps_local_enquiries', JSON.stringify([newEnquiry, ...list]));
+    localStorage.setItem('gdps_local_enquiries', JSON.stringify(updated));
   }
 
-  const res = await apiFetch<{ success: boolean; data: AdmissionEnquiry }>('/api/enquiries', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-
-  return res || { success: true, data: newEnquiry };
+  return { success: true, data: newEnquiry };
 }
 
 export async function getEnquiries(): Promise<AdmissionEnquiry[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.enquiries) && cloud.enquiries.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_enquiries', JSON.stringify(cloud.enquiries));
+    }
+    return cloud.enquiries;
+  }
+
   const localList: AdmissionEnquiry[] = [];
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('gdps_local_enquiries');
@@ -672,53 +735,29 @@ export async function getEnquiries(): Promise<AdmissionEnquiry[]> {
     }
   }
 
-  const res = await apiFetch<{ success: boolean; data: AdmissionEnquiry[] }>('/api/enquiries');
-  if (res && res.success && res.data) {
-    // Merge remote and any locally stored offline entries without duplicate ids
-    const remote = res.data;
-    const remoteIds = new Set(remote.map((r) => r._id));
-    const combined = [...remote, ...localList.filter((l) => !remoteIds.has(l._id))];
-    return combined;
-  }
-
   return localList;
 }
 
 export async function updateEnquiryStatus(id: string, status: 'new' | 'contacted') {
+  const current = await getEnquiries();
+  const updated = current.map((item) => (item._id === id ? { ...item, status } : item));
+  await syncToCloud({ enquiries: updated });
+
   if (typeof window !== 'undefined') {
-    const local = localStorage.getItem('gdps_local_enquiries');
-    if (local) {
-      try {
-        const list: AdmissionEnquiry[] = JSON.parse(local);
-        const updated = list.map((item) => (item._id === id ? { ...item, status } : item));
-        localStorage.setItem('gdps_local_enquiries', JSON.stringify(updated));
-      } catch {}
-    }
+    localStorage.setItem('gdps_local_enquiries', JSON.stringify(updated));
   }
 
-  const res = await apiFetch<{ success: boolean; data: AdmissionEnquiry }>(`/api/enquiries/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ status }),
-  });
-
-  return res || { success: true };
+  return { success: true };
 }
 
 export async function deleteEnquiry(id: string) {
+  const current = await getEnquiries();
+  const filtered = current.filter((item) => item._id !== id);
+  await syncToCloud({ enquiries: filtered });
+
   if (typeof window !== 'undefined') {
-    const local = localStorage.getItem('gdps_local_enquiries');
-    if (local) {
-      try {
-        const list: AdmissionEnquiry[] = JSON.parse(local);
-        const filtered = list.filter((item) => item._id !== id);
-        localStorage.setItem('gdps_local_enquiries', JSON.stringify(filtered));
-      } catch {}
-    }
+    localStorage.setItem('gdps_local_enquiries', JSON.stringify(filtered));
   }
 
-  const res = await apiFetch<{ success: boolean; message: string }>(`/api/enquiries/${id}`, {
-    method: 'DELETE',
-  });
-
-  return res || { success: true, message: 'Deleted' };
+  return { success: true, message: 'Deleted' };
 }
