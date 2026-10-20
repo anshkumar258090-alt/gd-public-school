@@ -10,6 +10,9 @@ import {
   TeamMember,
   MediaItem,
   SchoolNotice,
+  FeeItem,
+  AdmissionApplication,
+  StudentItem,
 } from '@/lib/types';
 import {
   loginAdmin,
@@ -35,11 +38,25 @@ import {
   getEnquiries,
   updateEnquiryStatus,
   deleteEnquiry,
+  getFeeStructure,
+  updateFeeStructure,
+  getAdmissionApplications,
+  updateAdmissionStatus,
+  deleteAdmissionApplication,
+  getStudents,
+  createStudent,
+  updateStudent,
+  deleteStudent,
   DEFAULT_SCHOOL,
   DEFAULT_STATS,
   DEFAULT_TEAM,
+  DEFAULT_FEES,
+  DEFAULT_STUDENTS,
 } from '@/lib/api';
 import {
+  CreditCard,
+  FileText,
+  GraduationCap,
   ShieldCheck,
   Lock,
   User,
@@ -70,6 +87,8 @@ import {
   Search,
   Download,
   RefreshCw,
+  Edit3,
+  X,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -84,7 +103,7 @@ export default function AdminPage() {
 
   // Active dashboard tab
   const [activeTab, setActiveTab] = useState<
-    'team' | 'enquiries' | 'announcement' | 'branding' | 'general' | 'stats' | 'media' | 'notices'
+    'team' | 'enquiries' | 'announcement' | 'branding' | 'general' | 'stats' | 'media' | 'notices' | 'fees' | 'admissions' | 'students'
   >('team');
 
   // Status message
@@ -103,6 +122,43 @@ export default function AdminPage() {
   const [enquiryFilter, setEnquiryFilter] = useState<'all' | 'new' | 'contacted'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dataLoading, setDataLoading] = useState(false);
+
+  // New modules: Fees, Admissions, Students
+  const [fees, setFees] = useState<FeeItem[]>(DEFAULT_FEES);
+  const [feeSaving, setFeeSaving] = useState(false);
+  const [newFeeItem, setNewFeeItem] = useState({
+    className: '',
+    admissionFee: '',
+    tuitionFee: '',
+    examFee: '',
+    otherFee: '',
+    totalFee: '',
+    installment: 'Quarterly',
+  });
+  const [showAddFeeModal, setShowAddFeeModal] = useState(false);
+
+  const [admissions, setAdmissions] = useState<AdmissionApplication[]>([]);
+  const [admissionFilter, setAdmissionFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'contacted'>('all');
+  const [admissionSearch, setAdmissionSearch] = useState('');
+  const [viewingAdmission, setViewingAdmission] = useState<AdmissionApplication | null>(null);
+
+  const [students, setStudents] = useState<StudentItem[]>(DEFAULT_STUDENTS);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [showStudentModal, setShowStudentModal] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [studentForm, setStudentForm] = useState({
+    name: '',
+    rollNo: '',
+    grade: 'Class 1',
+    section: 'A',
+    gender: 'Male',
+    fatherName: '',
+    phone: '',
+    dob: '',
+    bloodGroup: '',
+    performance: '',
+    achievements: '',
+  });
 
   // Logo upload state
   const [logoUploading, setLogoUploading] = useState(false);
@@ -148,13 +204,16 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     setDataLoading(true);
     try {
-      const [sData, stData, tData, mData, nData, eData] = await Promise.all([
+      const [sData, stData, tData, mData, nData, eData, fData, aData, stdData] = await Promise.all([
         getSchoolInfo(),
         getSchoolStats(),
         getTeamMembers(),
         getMediaGallery(),
         getNotices(),
         getEnquiries(),
+        getFeeStructure(),
+        getAdmissionApplications(),
+        getStudents(),
       ]);
       if (sData) setSchool(sData);
       if (stData) setStats(stData);
@@ -162,12 +221,174 @@ export default function AdminPage() {
       if (mData) setMedia(mData);
       if (nData) setNotices(nData);
       if (eData) setEnquiries(eData);
+      if (fData) setFees(fData);
+      if (aData) setAdmissions(aData);
+      if (stdData) setStudents(stdData);
     } catch (e) {
       console.error(e);
       showStatus('Failed to load some data from server', 'error');
     } finally {
       setDataLoading(false);
     }
+  };
+
+  // Fee Management Handlers
+  const handleUpdateFeeField = (id: string, field: keyof FeeItem, value: string) => {
+    setFees((prev) =>
+      prev.map((f) => (f._id === id ? { ...f, [field]: value } : f))
+    );
+  };
+
+  const handleSaveFees = async () => {
+    setFeeSaving(true);
+    try {
+      await updateFeeStructure(fees);
+      showStatus('Fee structure updated successfully!');
+    } catch {
+      showStatus('Failed to save fee structure', 'error');
+    } finally {
+      setFeeSaving(false);
+    }
+  };
+
+  const handleAddFeeRow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFeeItem.className.trim()) {
+      showStatus('Please specify the Class / Grade name', 'error');
+      return;
+    }
+    const newItem: FeeItem = {
+      _id: 'fee_' + Date.now(),
+      ...newFeeItem,
+    };
+    const updated = [...fees, newItem];
+    setFees(updated);
+    await updateFeeStructure(updated);
+    setNewFeeItem({
+      className: '',
+      admissionFee: '',
+      tuitionFee: '',
+      examFee: '',
+      otherFee: '',
+      totalFee: '',
+      installment: 'Quarterly',
+    });
+    setShowAddFeeModal(false);
+    showStatus('New class fee row added!');
+  };
+
+  const handleDeleteFeeRow = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this fee item?')) return;
+    const updated = fees.filter((f) => f._id !== id);
+    setFees(updated);
+    await updateFeeStructure(updated);
+    showStatus('Fee row deleted');
+  };
+
+  // Admission Applications Handlers
+  const handleUpdateAdmissionAppStatus = async (id: string, status: AdmissionApplication['status']) => {
+    try {
+      await updateAdmissionStatus(id, status);
+      setAdmissions((prev) => prev.map((a) => (a._id === id ? { ...a, status } : a)));
+      showStatus(`Application status updated to ${status.toUpperCase()}!`);
+    } catch {
+      showStatus('Failed to update application status', 'error');
+    }
+  };
+
+  const handleDeleteAdmissionApp = async (id: string) => {
+    if (!confirm('Are you sure you want to permanently delete this admission application?')) return;
+    try {
+      await deleteAdmissionApplication(id);
+      setAdmissions((prev) => prev.filter((a) => a._id !== id));
+      if (viewingAdmission?._id === id) setViewingAdmission(null);
+      showStatus('Admission application record deleted');
+    } catch {
+      showStatus('Failed to delete application', 'error');
+    }
+  };
+
+  const handleRefreshAdmissions = async () => {
+    try {
+      const aData = await getAdmissionApplications();
+      if (aData) {
+        setAdmissions(aData);
+        showStatus('Admission applications refreshed!');
+      }
+    } catch {
+      showStatus('Failed to refresh admissions', 'error');
+    }
+  };
+
+  // Student Directory Handlers
+  const handleSaveStudentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentForm.name.trim() || !studentForm.rollNo.trim()) {
+      showStatus('Student Name and Roll Number are required', 'error');
+      return;
+    }
+
+    try {
+      if (editingStudentId) {
+        await updateStudent(editingStudentId, studentForm);
+        setStudents((prev) =>
+          prev.map((s) => (s._id === editingStudentId ? { ...s, ...studentForm } : s))
+        );
+        showStatus('Student record updated successfully!');
+      } else {
+        const res = await createStudent(studentForm);
+        if (res.data) {
+          setStudents((prev) => [res.data, ...prev]);
+        }
+        showStatus('New student record created!');
+      }
+      setShowStudentModal(false);
+      setEditingStudentId(null);
+      setStudentForm({
+        name: '',
+        rollNo: '',
+        grade: 'Class 1',
+        section: 'A',
+        gender: 'Male',
+        fatherName: '',
+        phone: '',
+        dob: '',
+        bloodGroup: '',
+        performance: '',
+        achievements: '',
+      });
+    } catch {
+      showStatus('Failed to save student record', 'error');
+    }
+  };
+
+  const handleDeleteStudentItem = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this student record?')) return;
+    try {
+      await deleteStudent(id);
+      setStudents((prev) => prev.filter((s) => s._id !== id));
+      showStatus('Student record removed');
+    } catch {
+      showStatus('Failed to delete student', 'error');
+    }
+  };
+
+  const handleOpenEditStudent = (student: StudentItem) => {
+    setEditingStudentId(student._id);
+    setStudentForm({
+      name: student.name,
+      rollNo: student.rollNo,
+      grade: student.grade,
+      section: student.section,
+      gender: student.gender,
+      fatherName: student.fatherName,
+      phone: student.phone,
+      dob: student.dob || '',
+      bloodGroup: student.bloodGroup || '',
+      performance: student.performance || '',
+      achievements: student.achievements || '',
+    });
+    setShowStudentModal(true);
   };
 
   const handleUpdateEnquiryStatus = async (id: string, newStatus: 'new' | 'contacted') => {
@@ -895,6 +1116,47 @@ export default function AdminPage() {
           >
             <Bell className="w-4 h-4" />
             <span>Notice Board ({notices.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('fees')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+              activeTab === 'fees'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Fee Structure ({fees.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('admissions')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition relative ${
+              activeTab === 'admissions'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Admission Forms ({admissions.length})</span>
+            {admissions.filter((a) => a.status === 'pending').length > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse">
+                {admissions.filter((a) => a.status === 'pending').length} Pending
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('students')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+              activeTab === 'students'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span>Students Directory ({students.length})</span>
           </button>
         </div>
 
@@ -2177,6 +2439,709 @@ export default function AdminPage() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 9: FEE STRUCTURE MANAGEMENT */}
+        {activeTab === 'fees' && (
+          <div className="space-y-6">
+            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-sky-600" />
+                  <span>Fee Structure Configuration</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                  Update class-wise fee schedules, tuition fees, and payment frequencies visible to parents on the website.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddFeeModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-sm transition"
+                >
+                  <Plus className="w-4 h-4 text-sky-600" />
+                  <span>Add Grade Row</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={feeSaving}
+                  onClick={handleSaveFees}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition disabled:opacity-50"
+                >
+                  {feeSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Save All Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Fee Table */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3 px-3">Class / Grade</th>
+                    <th className="py-3 px-3">One-time Admission</th>
+                    <th className="py-3 px-3">Tuition Fee</th>
+                    <th className="py-3 px-3">Exam Fee</th>
+                    <th className="py-3 px-3">Other / Activity</th>
+                    <th className="py-3 px-3">Total Year Approx</th>
+                    <th className="py-3 px-3">Installment</th>
+                    <th className="py-3 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {fees.map((fee) => (
+                    <tr key={fee._id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.className}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'className', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-900 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.admissionFee}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'admissionFee', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.tuitionFee}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'tuitionFee', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-emerald-700 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.examFee}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'examFee', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.otherFee}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'otherFee', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.totalFee}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'totalFee', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-sky-300 text-xs font-bold text-sky-700 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3">
+                        <input
+                          type="text"
+                          value={fee.installment || 'Quarterly'}
+                          onChange={(e) => handleUpdateFeeField(fee._id, 'installment', e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                        />
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFeeRow(fee._id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 transition"
+                          title="Delete fee row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>💡 Tip: Click "Save All Changes" in the top bar to apply fee updates live to the website.</span>
+              </div>
+            </div>
+
+            {/* Modal: Add New Grade Fee Row */}
+            {showAddFeeModal && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900 text-lg">Add New Class Fee Structure</h4>
+                    <button
+                      onClick={() => setShowAddFeeModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleAddFeeRow} className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Class Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Class 11 (Commerce)"
+                        value={newFeeItem.className}
+                        onChange={(e) => setNewFeeItem({ ...newFeeItem, className: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Admission Fee</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ₹6,000"
+                          value={newFeeItem.admissionFee}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, admissionFee: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Tuition Fee</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ₹2,500/mo"
+                          value={newFeeItem.tuitionFee}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, tuitionFee: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Exam Fee</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ₹1,200/term"
+                          value={newFeeItem.examFee}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, examFee: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Activity Fee</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ₹1,500/yr"
+                          value={newFeeItem.otherFee}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, otherFee: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Yearly Total</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. ₹35,000/yr"
+                          value={newFeeItem.totalFee}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, totalFee: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-sky-700"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Installment</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Quarterly"
+                          value={newFeeItem.installment}
+                          onChange={(e) => setNewFeeItem({ ...newFeeItem, installment: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddFeeModal(false)}
+                        className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-sm"
+                      >
+                        Add Grade
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 10: ADMISSION APPLICATIONS MANAGEMENT */}
+        {activeTab === 'admissions' && (
+          <div className="space-y-6">
+            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-sky-600" />
+                  <span>Online Admission Applications ({admissions.length})</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                  Manage applications submitted online via the admission portal. Review, schedule interactions, or update status.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRefreshAdmissions}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-sm transition"
+                >
+                  <RefreshCw className="w-4 h-4 text-sky-600" />
+                  <span>Refresh List</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                {(['all', 'pending', 'approved', 'contacted', 'rejected'] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setAdmissionFilter(filter)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
+                      admissionFilter === filter
+                        ? 'bg-sky-600 text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {filter} (
+                    {filter === 'all'
+                      ? admissions.length
+                      : admissions.filter((a) => a.status === filter).length}
+                    )
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search student, parent, phone..."
+                  value={admissionSearch}
+                  onChange={(e) => setAdmissionSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+
+            {/* Admissions List */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-4">
+              {admissions
+                .filter((app) => {
+                  const matchFilter = admissionFilter === 'all' || app.status === admissionFilter;
+                  const matchSearch =
+                    app.studentName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
+                    app.fatherName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
+                    app.phone.includes(admissionSearch) ||
+                    app.grade.toLowerCase().includes(admissionSearch.toLowerCase());
+                  return matchFilter && matchSearch;
+                })
+                .map((app) => (
+                  <div
+                    key={app._id}
+                    className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-3">
+                        <h4 className="font-bold text-slate-900 text-base">{app.studentName}</h4>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">
+                          {app.grade}
+                        </span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                            app.status === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : app.status === 'rejected'
+                              ? 'bg-rose-100 text-rose-800'
+                              : app.status === 'contacted'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {app.status}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+                        <span><strong>Father:</strong> {app.fatherName}</span>
+                        {app.motherName && <span><strong>Mother:</strong> {app.motherName}</span>}
+                        <span><strong>Phone:</strong> {app.phone}</span>
+                        {app.email && <span><strong>Email:</strong> {app.email}</span>}
+                        <span><strong>DOB:</strong> {app.dob}</span>
+                      </div>
+
+                      {app.prevSchool && (
+                        <p className="text-xs text-slate-500">
+                          <strong>Prev School:</strong> {app.prevSchool}
+                        </p>
+                      )}
+
+                      {app.remarks && (
+                        <p className="text-xs text-slate-500 bg-white p-2 rounded-lg border border-slate-200 inline-block">
+                          💬 {app.remarks}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Status Actions */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'approved')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                          app.status === 'approved'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50'
+                        }`}
+                      >
+                        Approve
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'contacted')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                          app.status === 'contacted'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white border border-blue-300 text-blue-700 hover:bg-blue-50'
+                        }`}
+                      >
+                        Contacted
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'rejected')}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                          app.status === 'rejected'
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50'
+                        }`}
+                      >
+                        Reject
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAdmissionApp(app._id)}
+                        className="p-2 text-slate-400 hover:text-rose-600 transition"
+                        title="Delete application"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {admissions.length === 0 && (
+                <div className="text-center py-12 text-slate-400 text-sm">
+                  No admission applications received yet.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 11: STUDENTS DIRECTORY MANAGEMENT */}
+        {activeTab === 'students' && (
+          <div className="space-y-6">
+            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-sky-600" />
+                  <span>Student Directory & Achievers Registry</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                  Manage student profiles, academic achievers, board toppers, and verifiable student directory entries.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingStudentId(null);
+                    setStudentForm({
+                      name: '',
+                      rollNo: '',
+                      grade: 'Class 1',
+                      section: 'A',
+                      gender: 'Male',
+                      fatherName: '',
+                      phone: '',
+                      dob: '',
+                      bloodGroup: '',
+                      performance: '',
+                      achievements: '',
+                    });
+                    setShowStudentModal(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Student</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm flex items-center justify-between">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search student by name, roll no, grade..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+              <span className="text-xs font-semibold text-slate-500">
+                Total Records: {students.length}
+              </span>
+            </div>
+
+            {/* Students Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {students
+                .filter((s) => {
+                  const query = studentSearch.toLowerCase();
+                  return (
+                    s.name.toLowerCase().includes(query) ||
+                    s.rollNo.toLowerCase().includes(query) ||
+                    s.grade.toLowerCase().includes(query) ||
+                    (s.achievements && s.achievements.toLowerCase().includes(query))
+                  );
+                })
+                .map((student) => (
+                  <div
+                    key={student._id}
+                    className="p-5 rounded-3xl bg-white border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono text-xs font-bold">
+                          {student.rollNo}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditStudent(student)}
+                            className="p-1.5 text-slate-400 hover:text-sky-600 transition"
+                            title="Edit student"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteStudentItem(student._id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 transition"
+                            title="Delete student"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <h4 className="font-bold text-slate-900 text-base">{student.name}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {student.grade} • Section {student.section}
+                      </p>
+
+                      {student.performance && (
+                        <div className="mt-3 inline-block px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+                          🏆 {student.performance}
+                        </div>
+                      )}
+
+                      {student.achievements && (
+                        <p className="mt-2 text-xs text-slate-600 line-clamp-2">
+                          🌟 {student.achievements}
+                        </p>
+                      )}
+
+                      <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+                        <div><strong>Parent:</strong> {student.fatherName}</div>
+                        <div><strong>Phone:</strong> {student.phone}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Modal: Add / Edit Student */}
+            {showStudentModal && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900 text-lg">
+                      {editingStudentId ? 'Edit Student Profile' : 'Add New Student Record'}
+                    </h4>
+                    <button
+                      onClick={() => setShowStudentModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveStudentSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={studentForm.name}
+                          onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
+                          placeholder="e.g. Aarav Sharma"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Roll / ID No. *</label>
+                        <input
+                          type="text"
+                          required
+                          value={studentForm.rollNo}
+                          onChange={(e) => setStudentForm({ ...studentForm, rollNo: e.target.value })}
+                          placeholder="e.g. GD-101"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Class / Grade</label>
+                        <input
+                          type="text"
+                          value={studentForm.grade}
+                          onChange={(e) => setStudentForm({ ...studentForm, grade: e.target.value })}
+                          placeholder="e.g. Class 10"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Section</label>
+                        <input
+                          type="text"
+                          value={studentForm.section}
+                          onChange={(e) => setStudentForm({ ...studentForm, section: e.target.value })}
+                          placeholder="e.g. A"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Gender</label>
+                        <select
+                          value={studentForm.gender}
+                          onChange={(e) => setStudentForm({ ...studentForm, gender: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Father's Name</label>
+                        <input
+                          type="text"
+                          value={studentForm.fatherName}
+                          onChange={(e) => setStudentForm({ ...studentForm, fatherName: e.target.value })}
+                          placeholder="e.g. Rajesh Sharma"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Contact Phone</label>
+                        <input
+                          type="tel"
+                          value={studentForm.phone}
+                          onChange={(e) => setStudentForm({ ...studentForm, phone: e.target.value })}
+                          placeholder="+91 98765 43210"
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Academic Performance / Score</label>
+                      <input
+                        type="text"
+                        value={studentForm.performance}
+                        onChange={(e) => setStudentForm({ ...studentForm, performance: e.target.value })}
+                        placeholder="e.g. 98.4% (CBSE Topper)"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Honors / Achievements</label>
+                      <textarea
+                        rows={2}
+                        value={studentForm.achievements}
+                        onChange={(e) => setStudentForm({ ...studentForm, achievements: e.target.value })}
+                        placeholder="e.g. Gold Medal in National Science Olympiad 2024"
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      />
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setShowStudentModal(false)}
+                        className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-sm"
+                      >
+                        {editingStudentId ? 'Update Student' : 'Save Student'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

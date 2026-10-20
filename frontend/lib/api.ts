@@ -1,4 +1,4 @@
-import { SchoolInfo, SchoolStats, TeamMember, MediaItem, SchoolNotice, AdmissionEnquiry } from './types';
+import { SchoolInfo, SchoolStats, TeamMember, MediaItem, SchoolNotice, AdmissionEnquiry, FeeItem, AdmissionApplication, StudentItem } from './types';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -97,6 +97,57 @@ export const DEFAULT_NOTICES: SchoolNotice[] = [
     isActive: true,
   },
 ];
+
+export const DEFAULT_FEES: FeeItem[] = [
+  { _id: 'fee_1', className: 'Nursery - UKG', tuitionFee: '₹1,500/mo', admissionFee: '₹5,000', examFee: '₹800/term', otherFee: '₹1,200/yr', totalFee: '₹25,000/yr', installment: 'Quarterly' },
+  { _id: 'fee_2', className: 'Class 1 - 5', tuitionFee: '₹2,000/mo', admissionFee: '₹6,000', examFee: '₹1,000/term', otherFee: '₹1,500/yr', totalFee: '₹31,500/yr', installment: 'Quarterly' },
+  { _id: 'fee_3', className: 'Class 6 - 8', tuitionFee: '₹2,500/mo', admissionFee: '₹7,000', examFee: '₹1,200/term', otherFee: '₹1,800/yr', totalFee: '₹38,200/yr', installment: 'Quarterly' },
+  { _id: 'fee_4', className: 'Class 9 - 10', tuitionFee: '₹3,000/mo', admissionFee: '₹8,000', examFee: '₹1,500/term', otherFee: '₹2,000/yr', totalFee: '₹46,000/yr', installment: 'Quarterly' },
+  { _id: 'fee_5', className: 'Class 11 - 12 (Sci / Comm / Arts)', tuitionFee: '₹3,800/mo', admissionFee: '₹10,000', examFee: '₹2,000/term', otherFee: '₹2,500/yr', totalFee: '₹58,100/yr', installment: 'Quarterly' },
+];
+
+export const DEFAULT_ADMISSIONS: AdmissionApplication[] = [
+  {
+    _id: 'adm_1',
+    studentName: 'Vivaan Patel',
+    fatherName: 'Ramesh Patel',
+    motherName: 'Sunita Patel',
+    dob: '2016-04-12',
+    gender: 'Male',
+    grade: 'Class 4',
+    phone: '+91 98111 22334',
+    email: 'ramesh.patel@gmail.com',
+    address: 'Sector 4, Civil Lines',
+    prevSchool: 'St. Xavier Academy',
+    status: 'approved',
+    submittedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    remarks: 'Document verification completed',
+  },
+  {
+    _id: 'adm_2',
+    studentName: 'Ishita Roy',
+    fatherName: 'Debashish Roy',
+    motherName: 'Anuradha Roy',
+    dob: '2018-09-20',
+    gender: 'Female',
+    grade: 'Class 1',
+    phone: '+91 98222 33445',
+    email: 'd.roy@yahoo.com',
+    address: 'Green Avenue, Near City Center',
+    prevSchool: 'Little Angels Nursery',
+    status: 'pending',
+    submittedAt: new Date(Date.now() - 86400000).toISOString(),
+    remarks: 'Interaction scheduled for Friday',
+  },
+];
+
+export const DEFAULT_STUDENTS: StudentItem[] = [
+  { _id: 'std_1', name: 'Aarav Sharma', rollNo: 'GD-101', grade: 'Class 10', section: 'A', gender: 'Male', fatherName: 'Rajesh Sharma', phone: '+91 98765 11111', performance: '98.4% (CBSE Topper)', achievements: 'Gold Medal in State Science Olympiad' },
+  { _id: 'std_2', name: 'Ananya Verma', rollNo: 'GD-102', grade: 'Class 12', section: 'A (Science)', gender: 'Female', fatherName: 'Manoj Verma', phone: '+91 98765 22222', performance: '99.0% (School Rank 1)', achievements: 'National Level Debate Champion' },
+  { _id: 'std_3', name: 'Rohan Gupta', rollNo: 'GD-103', grade: 'Class 9', section: 'B', gender: 'Male', fatherName: 'Sanjay Gupta', phone: '+91 98765 33333', performance: '95.2%', achievements: 'Captain of School Football Team' },
+  { _id: 'std_4', name: 'Priya Singh', rollNo: 'GD-104', grade: 'Class 11', section: 'Commerce', gender: 'Female', fatherName: 'Vikram Singh', phone: '+91 98765 44444', performance: '97.5%', achievements: 'State Level Chess Gold Medalist' },
+];
+
 
 // Helper to safely write to localStorage without crashing if quota exceeded
 export function safeSetLocalStorage(key: string, value: string) {
@@ -758,3 +809,157 @@ export async function deleteEnquiry(id: string) {
 
   return { success: true, message: 'Deleted' };
 }
+
+// --- Fee Structure APIs ---
+export async function getFeeStructure(): Promise<FeeItem[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.fees) && cloud.fees.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_fees', JSON.stringify(cloud.fees));
+    }
+    return cloud.fees;
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_fees');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+  }
+
+  return DEFAULT_FEES;
+}
+
+export async function updateFeeStructure(fees: FeeItem[]) {
+  await syncToCloud({ fees });
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_fees', JSON.stringify(fees));
+  }
+  return { success: true };
+}
+
+// --- Admission Applications APIs ---
+export async function getAdmissionApplications(): Promise<AdmissionApplication[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.admissions) && cloud.admissions.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_admissions', JSON.stringify(cloud.admissions));
+    }
+    return cloud.admissions;
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_admissions');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+  }
+
+  return DEFAULT_ADMISSIONS;
+}
+
+export async function submitAdmissionApplication(appData: Omit<AdmissionApplication, '_id' | 'submittedAt' | 'status'>) {
+  const newApp: AdmissionApplication = {
+    _id: 'adm_' + Date.now(),
+    ...appData,
+    status: 'pending',
+    submittedAt: new Date().toISOString(),
+  };
+
+  const current = await getAdmissionApplications();
+  const updated = [newApp, ...current];
+  await syncToCloud({ admissions: updated });
+
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_admissions', JSON.stringify(updated));
+  }
+
+  return { success: true, data: newApp };
+}
+
+export async function updateAdmissionStatus(id: string, status: AdmissionApplication['status']) {
+  const current = await getAdmissionApplications();
+  const updated = current.map((item) => (item._id === id ? { ...item, status } : item));
+  await syncToCloud({ admissions: updated });
+
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_admissions', JSON.stringify(updated));
+  }
+
+  return { success: true };
+}
+
+export async function deleteAdmissionApplication(id: string) {
+  const current = await getAdmissionApplications();
+  const filtered = current.filter((item) => item._id !== id);
+  await syncToCloud({ admissions: filtered });
+
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_admissions', JSON.stringify(filtered));
+  }
+
+  return { success: true, message: 'Deleted' };
+}
+
+// --- Students APIs ---
+export async function getStudents(): Promise<StudentItem[]> {
+  const cloud = await fetchCloudDb();
+  if (cloud && Array.isArray(cloud.students) && cloud.students.length > 0) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_students', JSON.stringify(cloud.students));
+    }
+    return cloud.students;
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_students');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+  }
+
+  return DEFAULT_STUDENTS;
+}
+
+export async function saveStudents(students: StudentItem[]) {
+  await syncToCloud({ students });
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_students', JSON.stringify(students));
+  }
+  return { success: true };
+}
+
+export async function createStudent(data: Omit<StudentItem, '_id'>) {
+  const newStudent: StudentItem = {
+    _id: 'std_' + Date.now(),
+    ...data,
+  };
+  const current = await getStudents();
+  const updated = [newStudent, ...current];
+  await saveStudents(updated);
+  return { success: true, data: newStudent };
+}
+
+export async function updateStudent(id: string, data: Partial<StudentItem>) {
+  const current = await getStudents();
+  const updated = current.map((s) => (s._id === id ? { ...s, ...data } : s));
+  await saveStudents(updated);
+  return { success: true };
+}
+
+export async function deleteStudent(id: string) {
+  const current = await getStudents();
+  const filtered = current.filter((s) => s._id !== id);
+  await saveStudents(filtered);
+  return { success: true, message: 'Deleted' };
+}
+

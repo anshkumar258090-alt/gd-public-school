@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
+import AdmissionForm from '@/components/AdmissionForm';
+import FeeStructure from '@/components/FeeStructure';
+import StudentsSection from '@/components/StudentsSection';
 import Team from '@/components/Team';
 import Facilities from '@/components/Facilities';
 import Media from '@/components/Media';
@@ -17,17 +20,23 @@ import {
   TeamMember,
   MediaItem,
   SchoolNotice,
+  FeeItem,
+  StudentItem,
 } from '@/lib/types';
 import {
   DEFAULT_SCHOOL,
   DEFAULT_STATS,
   DEFAULT_TEAM,
   DEFAULT_NOTICES,
+  DEFAULT_FEES,
+  DEFAULT_STUDENTS,
   getSchoolInfo,
   getSchoolStats,
   getTeamMembers,
   getMediaGallery,
   getNotices,
+  getFeeStructure,
+  getStudents,
 } from '@/lib/api';
 
 export default function HomePage() {
@@ -36,18 +45,22 @@ export default function HomePage() {
   const [team, setTeam] = useState<TeamMember[]>(DEFAULT_TEAM);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [notices, setNotices] = useState<SchoolNotice[]>(DEFAULT_NOTICES);
+  const [fees, setFees] = useState<FeeItem[]>(DEFAULT_FEES);
+  const [students, setStudents] = useState<StudentItem[]>(DEFAULT_STUDENTS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [schoolRes, statsRes, teamRes, mediaRes, noticesRes] =
+        const [schoolRes, statsRes, teamRes, mediaRes, noticesRes, feesRes, studentsRes] =
           await Promise.allSettled([
             getSchoolInfo(),
             getSchoolStats(),
             getTeamMembers(),
             getMediaGallery(),
             getNotices(),
+            getFeeStructure(),
+            getStudents(),
           ]);
 
         if (schoolRes.status === 'fulfilled' && schoolRes.value) {
@@ -65,6 +78,12 @@ export default function HomePage() {
         if (noticesRes.status === 'fulfilled' && noticesRes.value) {
           setNotices(noticesRes.value);
         }
+        if (feesRes.status === 'fulfilled' && feesRes.value) {
+          setFees(feesRes.value);
+        }
+        if (studentsRes.status === 'fulfilled' && studentsRes.value) {
+          setStudents(studentsRes.value);
+        }
       } catch (e) {
         console.error('Error fetching school data:', e);
       } finally {
@@ -81,6 +100,9 @@ export default function HomePage() {
       <main className="flex-1">
         <Hero school={school} stats={stats} />
         <About school={school} />
+        <AdmissionForm />
+        <FeeStructure fees={fees} />
+        <StudentsSection students={students} />
         <Team team={team} />
         <Facilities />
         <Media mediaList={media} />

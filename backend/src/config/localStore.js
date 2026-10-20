@@ -94,6 +94,18 @@ const initialData = {
     },
   ],
   enquiries: [],
+  fees: [
+    { _id: 'fee_1', className: 'Nursery - UKG', tuitionFee: '₹1,500/mo', admissionFee: '₹5,000', examFee: '₹800/term', otherFee: '₹1,200/yr', totalFee: '₹25,000/yr', installment: 'Quarterly' },
+    { _id: 'fee_2', className: 'Class 1 - 5', tuitionFee: '₹2,000/mo', admissionFee: '₹6,000', examFee: '₹1,000/term', otherFee: '₹1,500/yr', totalFee: '₹31,500/yr', installment: 'Quarterly' },
+    { _id: 'fee_3', className: 'Class 6 - 8', tuitionFee: '₹2,500/mo', admissionFee: '₹7,000', examFee: '₹1,200/term', otherFee: '₹1,800/yr', totalFee: '₹38,200/yr', installment: 'Quarterly' },
+    { _id: 'fee_4', className: 'Class 9 - 10', tuitionFee: '₹3,000/mo', admissionFee: '₹8,000', examFee: '₹1,500/term', otherFee: '₹2,000/yr', totalFee: '₹46,000/yr', installment: 'Quarterly' },
+    { _id: 'fee_5', className: 'Class 11 - 12 (Sci / Comm / Arts)', tuitionFee: '₹3,800/mo', admissionFee: '₹10,000', examFee: '₹2,000/term', otherFee: '₹2,500/yr', totalFee: '₹58,100/yr', installment: 'Quarterly' },
+  ],
+  admissions: [],
+  students: [
+    { _id: 'std_1', name: 'Aarav Sharma', rollNo: 'GD-101', grade: 'Class 10', section: 'A', gender: 'Male', fatherName: 'Rajesh Sharma', phone: '+91 98765 11111', performance: '98.4% (CBSE Topper)', achievements: 'Gold Medal in State Science Olympiad' },
+    { _id: 'std_2', name: 'Ananya Verma', rollNo: 'GD-102', grade: 'Class 12', section: 'A (Science)', gender: 'Female', fatherName: 'Manoj Verma', phone: '+91 98765 22222', performance: '99.0% (School Rank 1)', achievements: 'National Level Debate Champion' },
+  ],
 };
 
 function readDB() {
@@ -108,6 +120,9 @@ function readDB() {
     const content = fs.readFileSync(dbFile, 'utf8');
     const parsed = JSON.parse(content);
     if (!parsed.enquiries) parsed.enquiries = [];
+    if (!parsed.fees) parsed.fees = initialData.fees;
+    if (!parsed.admissions) parsed.admissions = [];
+    if (!parsed.students) parsed.students = initialData.students;
     return parsed;
   } catch (err) {
     console.error('Error reading local db:', err);

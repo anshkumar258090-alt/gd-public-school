@@ -40,6 +40,9 @@ app.use('/api/media', require('./routes/media'));
 app.use('/api/notices', require('./routes/notices'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/enquiries', require('./routes/enquiries'));
+app.use('/api/fees', require('./routes/fees'));
+app.use('/api/admissions', require('./routes/admissions'));
+app.use('/api/students', require('./routes/students'));
 
 // Global error handler
 app.use((err, req, res, next) => {

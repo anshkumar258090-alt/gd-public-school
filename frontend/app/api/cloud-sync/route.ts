@@ -85,6 +85,9 @@ export async function POST(req: Request) {
       ...(body.notices ? { notices: body.notices } : {}),
       ...(body.media ? { media: body.media } : {}),
       ...(body.enquiries ? { enquiries: body.enquiries } : {}),
+      ...(body.fees ? { fees: body.fees } : {}),
+      ...(body.admissions ? { admissions: body.admissions } : {}),
+      ...(body.students ? { students: body.students } : {}),
     };
 
     // 3. Persist to MongoDB Atlas

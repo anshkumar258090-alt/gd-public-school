@@ -31,6 +31,9 @@ export default function Navbar({ school }: NavbarProps) {
   const navLinks = [
     { label: 'Home', href: '#hero', id: 'hero' },
     { label: 'About', href: '#about', id: 'about' },
+    { label: 'Admissions', href: '#admission', id: 'admission' },
+    { label: 'Fees', href: '#fees', id: 'fees' },
+    { label: 'Students', href: '#students', id: 'students' },
     { label: 'Leadership', href: '#leadership', id: 'leadership' },
     { label: 'Facilities', href: '#facilities', id: 'facilities' },
     { label: 'Gallery', href: '#gallery', id: 'gallery' },
@@ -43,7 +46,7 @@ export default function Navbar({ school }: NavbarProps) {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
 
-      const sectionIds = ['hero', 'about', 'leadership', 'facilities', 'gallery', 'notices', 'contact'];
+      const sectionIds = ['hero', 'about', 'admission', 'fees', 'students', 'leadership', 'facilities', 'gallery', 'notices', 'contact'];
       const scrollPosition = window.scrollY + 200;
 
       for (const id of sectionIds) {

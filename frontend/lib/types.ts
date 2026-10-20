@@ -66,8 +66,52 @@ export interface AdmissionEnquiry {
   createdAt: string;
 }
 
+export interface FeeItem {
+  _id: string;
+  className: string;
+  tuitionFee: string;
+  admissionFee: string;
+  examFee: string;
+  otherFee: string;
+  totalFee: string;
+  installment?: string;
+}
+
+export interface AdmissionApplication {
+  _id: string;
+  studentName: string;
+  fatherName: string;
+  motherName?: string;
+  dob: string;
+  gender: string;
+  grade: string;
+  phone: string;
+  email?: string;
+  address: string;
+  prevSchool?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'contacted';
+  submittedAt: string;
+  remarks?: string;
+}
+
+export interface StudentItem {
+  _id: string;
+  name: string;
+  rollNo: string;
+  grade: string;
+  section: string;
+  gender: string;
+  fatherName: string;
+  phone: string;
+  dob?: string;
+  bloodGroup?: string;
+  performance?: string;
+  achievements?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
 }
+
