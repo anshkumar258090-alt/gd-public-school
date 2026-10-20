@@ -248,8 +248,9 @@ export const ADMIN_USERNAME = 'gdps@2027';
 export const ADMIN_PASSWORD = 'gdpsadmin@x_md';
 
 export async function loginAdmin(credentials: { username: string; password: string }) {
-  // Check exact new admin credentials: id: gdps@2027, pass: gdpsadmin@x_md
-  if (credentials.username === ADMIN_USERNAME && credentials.password === ADMIN_PASSWORD) {
+  const u = (credentials.username || '').trim();
+  const p = (credentials.password || '').trim();
+  if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
     const token = 'gdps_admin_token_' + Date.now();
     if (typeof window !== 'undefined') {
       localStorage.setItem('gdps_admin_token', token);
