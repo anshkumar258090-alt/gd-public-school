@@ -38,7 +38,6 @@ export default function Navbar({ school }: NavbarProps) {
     { label: 'Facilities', href: '#facilities', id: 'facilities' },
     { label: 'Gallery', href: '#gallery', id: 'gallery' },
     { label: 'Notices', href: '#notices', id: 'notices' },
-    { label: 'Contact', href: '#contact', id: 'contact' },
   ];
 
   // Detect scroll position and current active section for dynamic pill highlight
@@ -141,24 +140,24 @@ export default function Navbar({ school }: NavbarProps) {
       )}
 
       {/* 2. FLOATING PILL NAVBAR (Floats below the announcement strip with clean spacing) */}
-      <div className={`w-full flex justify-center px-2.5 sm:px-6 transition-all duration-300 ${isAnnounceActive ? 'pt-2 sm:pt-3' : 'pt-2.5 sm:pt-4'}`}>
+      <div className={`w-full flex justify-center px-2 sm:px-6 transition-all duration-300 ${isAnnounceActive ? 'pt-2 sm:pt-3' : 'pt-2.5 sm:pt-4'}`}>
         <div 
-          className={`pointer-events-auto w-full max-w-6xl rounded-full transition-all duration-300 flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2.5 shadow-2xl ${
+          className={`pointer-events-auto w-full max-w-7xl 2xl:max-w-[1360px] rounded-full transition-all duration-300 flex items-center justify-between px-3 sm:px-5 py-1.5 sm:py-2 shadow-2xl gap-2 sm:gap-4 ${
             isScrolled
-              ? 'bg-[#070b16]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15)] py-1.5 sm:py-2'
+              ? 'bg-[#070b16]/95 backdrop-blur-2xl border border-white/[0.14] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_25px_rgba(6,182,212,0.15)] py-1.5'
               : 'bg-[#090e1d]/85 backdrop-blur-xl border border-white/[0.10] shadow-[0_15px_40px_rgba(0,0,0,0.45),0_0_20px_rgba(56,189,248,0.1)]'
           }`}
         >
           {/* LEFT: Brand / Logo */}
-          <Link href="#hero" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 p-[1.5px] shadow-[0_0_15px_rgba(56,189,248,0.4)] group-hover:shadow-[0_0_22px_rgba(6,182,212,0.7)] transition-all shrink-0">
+          <Link href="#hero" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 p-[1.5px] shadow-[0_0_15px_rgba(56,189,248,0.4)] group-hover:shadow-[0_0_22px_rgba(6,182,212,0.7)] transition-all shrink-0">
               <div className="w-full h-full rounded-full bg-[#090e1d] flex items-center justify-center overflow-hidden">
                 {school.logoUrl ? (
                   <Image
                     src={school.logoUrl}
                     alt="GD Public School"
-                    width={36}
-                    height={36}
+                    width={34}
+                    height={34}
                     className="object-contain p-0.5"
                   />
                 ) : (
@@ -167,17 +166,17 @@ export default function Navbar({ school }: NavbarProps) {
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-xs sm:text-base font-extrabold tracking-tight text-white group-hover:text-cyan-300 transition-colors leading-tight">
+              <span className="text-xs sm:text-sm xl:text-base font-extrabold tracking-tight text-white group-hover:text-cyan-300 transition-colors leading-tight whitespace-nowrap">
                 GD <span className="text-cyan-400">PUBLIC SCHOOL</span>
               </span>
-              <span className="text-[9px] font-semibold tracking-widest uppercase text-slate-400 group-hover:text-cyan-300/80 -mt-0.5 transition-colors hidden sm:block">
+              <span className="text-[8px] sm:text-[9px] font-semibold tracking-wider uppercase text-slate-400 group-hover:text-cyan-300/80 -mt-0.5 transition-colors hidden sm:block whitespace-nowrap">
                 Excellence in Education
               </span>
             </div>
           </Link>
 
           {/* CENTER: Navigation Capsule with Active Pill Indicator */}
-          <nav className="hidden lg:flex items-center gap-1 bg-white/[0.04] border border-white/[0.09] rounded-full p-1 shadow-inner backdrop-blur-md">
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 bg-white/[0.04] border border-white/[0.09] rounded-full p-1 shadow-inner backdrop-blur-md shrink-0">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
               return (
@@ -185,7 +184,7 @@ export default function Navbar({ school }: NavbarProps) {
                   key={link.label}
                   href={link.href}
                   onClick={() => setActiveSection(link.id)}
-                  className={`px-3.5 xl:px-4 py-1.5 text-xs xl:text-sm font-medium rounded-full transition-all duration-200 select-none ${
+                  className={`px-2.5 xl:px-3.5 py-1 text-xs font-medium rounded-full transition-all duration-200 select-none whitespace-nowrap ${
                     isActive
                       ? 'bg-white/[0.14] text-white border border-white/[0.22] shadow-[inset_0_1px_1px_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.3)] font-semibold'
                       : 'text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent'
@@ -198,15 +197,14 @@ export default function Navbar({ school }: NavbarProps) {
           </nav>
 
           {/* RIGHT: Glowing Neon CTA Button & Hamburger */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Glowing Gradient Pill CTA: Apply / Enquire */}
             <a
               href="#contact"
-              className="relative group overflow-hidden px-3 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 shadow-[0_0_18px_rgba(6,182,212,0.55)] hover:shadow-[0_0_32px_rgba(6,182,212,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-1 sm:gap-1.5 shrink-0"
+              className="relative group overflow-hidden px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-xs font-bold text-white bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 shadow-[0_0_18px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             >
-              <span className="relative z-10 flex items-center gap-1 sm:gap-1.5">
-                <span>Enquire</span>
-                <span className="hidden sm:inline">Now</span>
+              <span className="relative z-10 flex items-center gap-1.5">
+                <span>Enquire Now</span>
                 <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
