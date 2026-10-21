@@ -22,6 +22,9 @@ import {
   SchoolNotice,
   FeeItem,
   StudentItem,
+  AdmissionConfig,
+  FeeConfig,
+  StudentConfig,
 } from '@/lib/types';
 import {
   DEFAULT_SCHOOL,
@@ -30,6 +33,9 @@ import {
   DEFAULT_NOTICES,
   DEFAULT_FEES,
   DEFAULT_STUDENTS,
+  DEFAULT_ADMISSION_CONFIG,
+  DEFAULT_FEE_CONFIG,
+  DEFAULT_STUDENT_CONFIG,
   getSchoolInfo,
   getSchoolStats,
   getTeamMembers,
@@ -37,6 +43,9 @@ import {
   getNotices,
   getFeeStructure,
   getStudents,
+  getAdmissionConfig,
+  getFeeConfig,
+  getStudentConfig,
 } from '@/lib/api';
 
 export default function HomePage() {
@@ -47,21 +56,37 @@ export default function HomePage() {
   const [notices, setNotices] = useState<SchoolNotice[]>(DEFAULT_NOTICES);
   const [fees, setFees] = useState<FeeItem[]>(DEFAULT_FEES);
   const [students, setStudents] = useState<StudentItem[]>(DEFAULT_STUDENTS);
+  const [admissionConfig, setAdmissionConfig] = useState<AdmissionConfig>(DEFAULT_ADMISSION_CONFIG);
+  const [feeConfig, setFeeConfig] = useState<FeeConfig>(DEFAULT_FEE_CONFIG);
+  const [studentConfig, setStudentConfig] = useState<StudentConfig>(DEFAULT_STUDENT_CONFIG);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [schoolRes, statsRes, teamRes, mediaRes, noticesRes, feesRes, studentsRes] =
-          await Promise.allSettled([
-            getSchoolInfo(),
-            getSchoolStats(),
-            getTeamMembers(),
-            getMediaGallery(),
-            getNotices(),
-            getFeeStructure(),
-            getStudents(),
-          ]);
+        const [
+          schoolRes,
+          statsRes,
+          teamRes,
+          mediaRes,
+          noticesRes,
+          feesRes,
+          studentsRes,
+          admConfigRes,
+          feeConfigRes,
+          stdConfigRes,
+        ] = await Promise.allSettled([
+          getSchoolInfo(),
+          getSchoolStats(),
+          getTeamMembers(),
+          getMediaGallery(),
+          getNotices(),
+          getFeeStructure(),
+          getStudents(),
+          getAdmissionConfig(),
+          getFeeConfig(),
+          getStudentConfig(),
+        ]);
 
         if (schoolRes.status === 'fulfilled' && schoolRes.value) {
           setSchool(schoolRes.value);
@@ -84,6 +109,15 @@ export default function HomePage() {
         if (studentsRes.status === 'fulfilled' && studentsRes.value) {
           setStudents(studentsRes.value);
         }
+        if (admConfigRes.status === 'fulfilled' && admConfigRes.value) {
+          setAdmissionConfig(admConfigRes.value);
+        }
+        if (feeConfigRes.status === 'fulfilled' && feeConfigRes.value) {
+          setFeeConfig(feeConfigRes.value);
+        }
+        if (stdConfigRes.status === 'fulfilled' && stdConfigRes.value) {
+          setStudentConfig(stdConfigRes.value);
+        }
       } catch (e) {
         console.error('Error fetching school data:', e);
       } finally {
@@ -100,9 +134,9 @@ export default function HomePage() {
       <main className="flex-1">
         <Hero school={school} stats={stats} />
         <About school={school} />
-        <AdmissionForm />
-        <FeeStructure fees={fees} />
-        <StudentsSection students={students} />
+        <AdmissionForm config={admissionConfig} />
+        <FeeStructure fees={fees} config={feeConfig} />
+        <StudentsSection students={students} config={studentConfig} />
         <Team team={team} />
         <Facilities />
         <Media mediaList={media} />

@@ -18,7 +18,8 @@ import {
   HelpCircle,
   ArrowRight
 } from 'lucide-react';
-import { submitAdmissionApplication } from '@/lib/api';
+import { submitAdmissionApplication, DEFAULT_ADMISSION_CONFIG } from '@/lib/api';
+import { AdmissionConfig } from '@/lib/types';
 
 const CLASS_OPTIONS = [
   'Nursery',
@@ -51,7 +52,17 @@ const REQUIRED_DOCUMENTS = [
   'Aadhar Card copies of Student and Parents',
 ];
 
-export default function AdmissionForm() {
+interface AdmissionFormProps {
+  config?: AdmissionConfig;
+}
+
+export default function AdmissionForm({ config }: AdmissionFormProps) {
+  const activeConfig = config || DEFAULT_ADMISSION_CONFIG;
+  const docsList =
+    activeConfig.requiredDocuments && activeConfig.requiredDocuments.length > 0
+      ? activeConfig.requiredDocuments
+      : REQUIRED_DOCUMENTS;
+
   const [formData, setFormData] = useState({
     studentName: '',
     fatherName: '',
@@ -137,16 +148,13 @@ export default function AdmissionForm() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-4 h-4" />
-            Session 2025–26
+            {activeConfig.badgeText || `Session ${activeConfig.sessionYear}`}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-            Online Admission <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400">
-              Registration Portal
-            </span>
+            {activeConfig.headline || 'Online Admission Registration Portal'}
           </h2>
           <p className="mt-4 text-slate-400 text-base sm:text-lg">
-            Take the first step toward a transformative educational journey. Complete the digital form below to reserve an entrance interaction.
+            {activeConfig.subheadline || 'Take the first step toward a transformative educational journey. Complete the digital form below to reserve an entrance interaction.'}
           </p>
         </div>
 
@@ -159,7 +167,7 @@ export default function AdmissionForm() {
                 <span>Admission Process & Checklist</span>
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                Admissions for Nursery through Class 12 are granted on a first-come, first-served basis subject to seat availability and basic interaction.
+                Admissions for session {activeConfig.sessionYear} are granted on a first-come, first-served basis subject to seat availability and basic interaction.
               </p>
 
               <div className="space-y-4">
@@ -168,8 +176,8 @@ export default function AdmissionForm() {
                     1
                   </div>
                   <div>
-                    <h5 className="text-white text-sm font-semibold">Online Submission</h5>
-                    <p className="text-slate-400 text-xs mt-0.5">Fill and submit this digital application form.</p>
+                    <h5 className="text-white text-sm font-semibold">{activeConfig.step1Title || 'Online Submission'}</h5>
+                    <p className="text-slate-400 text-xs mt-0.5">{activeConfig.step1Desc || 'Fill and submit this digital application form.'}</p>
                   </div>
                 </div>
 
@@ -178,8 +186,8 @@ export default function AdmissionForm() {
                     2
                   </div>
                   <div>
-                    <h5 className="text-white text-sm font-semibold">Verification & Interaction</h5>
-                    <p className="text-slate-400 text-xs mt-0.5">Our admissions team contacts you within 24 hours with an interaction slot.</p>
+                    <h5 className="text-white text-sm font-semibold">{activeConfig.step2Title || 'Verification & Interaction'}</h5>
+                    <p className="text-slate-400 text-xs mt-0.5">{activeConfig.step2Desc || 'Our admissions team contacts you within 24 hours with an interaction slot.'}</p>
                   </div>
                 </div>
 
@@ -188,8 +196,8 @@ export default function AdmissionForm() {
                     3
                   </div>
                   <div>
-                    <h5 className="text-white text-sm font-semibold">Seat Confirmation</h5>
-                    <p className="text-slate-400 text-xs mt-0.5">Document submission and fee installment payment at the school office.</p>
+                    <h5 className="text-white text-sm font-semibold">{activeConfig.step3Title || 'Seat Confirmation'}</h5>
+                    <p className="text-slate-400 text-xs mt-0.5">{activeConfig.step3Desc || 'Document submission and fee installment payment at the school office.'}</p>
                   </div>
                 </div>
               </div>
@@ -197,7 +205,7 @@ export default function AdmissionForm() {
               <div className="mt-8 pt-6 border-t border-white/10">
                 <h4 className="text-white font-semibold text-sm mb-3">Documents Needed at Verification:</h4>
                 <ul className="space-y-2 text-xs text-slate-300">
-                  {REQUIRED_DOCUMENTS.map((doc, idx) => (
+                  {docsList.map((doc, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <CheckCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
                       <span>{doc}</span>
@@ -208,8 +216,23 @@ export default function AdmissionForm() {
 
               <div className="mt-6 p-4 rounded-2xl bg-cyan-500/5 border border-cyan-500/20 text-xs text-cyan-300 flex items-center gap-3">
                 <Clock className="w-5 h-5 shrink-0" />
-                <span>Office Hours: Monday to Saturday, 8:00 AM – 2:00 PM</span>
+                <span>Office Hours: {activeConfig.officeTimings || 'Monday to Saturday, 8:00 AM – 2:00 PM'}</span>
               </div>
+
+              {activeConfig.helplinePhone && (
+                <div className="mt-3 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-300 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Phone className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>Admissions Helpline: <strong>{activeConfig.helplinePhone}</strong></span>
+                  </div>
+                  <a
+                    href={`tel:${activeConfig.helplinePhone.replace(/\s+/g, '')}`}
+                    className="px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-bold text-[11px] transition"
+                  >
+                    Call Now
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 

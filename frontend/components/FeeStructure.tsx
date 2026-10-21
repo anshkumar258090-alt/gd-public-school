@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FeeItem } from '@/lib/types';
+import { FeeItem, FeeConfig } from '@/lib/types';
+import { DEFAULT_FEE_CONFIG } from '@/lib/api';
 import { 
   CreditCard, 
   CheckCircle2, 
@@ -17,9 +18,11 @@ import {
 
 interface FeeStructureProps {
   fees?: FeeItem[];
+  config?: FeeConfig;
 }
 
-export default function FeeStructure({ fees = [] }: FeeStructureProps) {
+export default function FeeStructure({ fees = [], config }: FeeStructureProps) {
+  const activeConfig = config || DEFAULT_FEE_CONFIG;
   const [selectedClassId, setSelectedClassId] = useState<string>(fees[0]?._id || '');
 
   const activeFee = fees.find((f) => f._id === selectedClassId) || fees[0];
@@ -38,13 +41,10 @@ export default function FeeStructure({ fees = [] }: FeeStructureProps) {
             Transparent Fee Structure
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-            Affordable Excellence, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400">
-              No Hidden Charges
-            </span>
+            {activeConfig.headline || 'Affordable Excellence, No Hidden Charges'}
           </h2>
           <p className="mt-4 text-slate-400 text-base sm:text-lg">
-            We believe world-class education should be accessible. Explore our comprehensive, transparent fee breakdown for the academic session 2025–26.
+            {activeConfig.subheadline || `We believe world-class education should be accessible. Explore our comprehensive, transparent fee breakdown for the academic session ${activeConfig.sessionYear || '2025–26'}.`}
           </p>
         </div>
 
@@ -55,23 +55,23 @@ export default function FeeStructure({ fees = [] }: FeeStructureProps) {
               <CalendarDays className="w-5 h-5" />
             </div>
             <h4 className="text-white font-semibold text-base">Quarterly Installments</h4>
-            <p className="text-slate-400 text-sm mt-1">Convenient 4-installment plan across the academic calendar.</p>
+            <p className="text-slate-400 text-sm mt-1">{activeConfig.quarterlyDesc || 'Convenient 4-installment plan across the academic calendar.'}</p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 mb-3">
               <BadgePercent className="w-5 h-5" />
             </div>
-            <h4 className="text-white font-semibold text-base">15% Sibling Concession</h4>
-            <p className="text-slate-400 text-sm mt-1">Tuition fee discount applied automatically for younger siblings.</p>
+            <h4 className="text-white font-semibold text-base">{activeConfig.siblingConcession || '15% Sibling Concession'}</h4>
+            <p className="text-slate-400 text-sm mt-1">{activeConfig.siblingDesc || 'Tuition fee discount applied automatically for younger siblings.'}</p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-3">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h4 className="text-white font-semibold text-base">Merit Scholarships</h4>
-            <p className="text-slate-400 text-sm mt-1">Up to 100% tuition waiver for outstanding sports & academic achievers.</p>
+            <h4 className="text-white font-semibold text-base">{activeConfig.scholarshipInfo || 'Merit Scholarships'}</h4>
+            <p className="text-slate-400 text-sm mt-1">{activeConfig.scholarshipDesc || 'Up to 100% tuition waiver for outstanding sports & academic achievers.'}</p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all">
@@ -79,7 +79,7 @@ export default function FeeStructure({ fees = [] }: FeeStructureProps) {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <h4 className="text-white font-semibold text-base">Zero Hidden Fees</h4>
-            <p className="text-slate-400 text-sm mt-1">Includes digital classroom access, library, sports & basic lab amenities.</p>
+            <p className="text-slate-400 text-sm mt-1">{activeConfig.zeroHiddenDesc || 'Includes digital classroom access, library, sports & basic lab amenities.'}</p>
           </div>
         </div>
 

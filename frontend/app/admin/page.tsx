@@ -13,6 +13,9 @@ import {
   FeeItem,
   AdmissionApplication,
   StudentItem,
+  AdmissionConfig,
+  FeeConfig,
+  StudentConfig,
 } from '@/lib/types';
 import {
   loginAdmin,
@@ -43,15 +46,25 @@ import {
   getAdmissionApplications,
   updateAdmissionStatus,
   deleteAdmissionApplication,
+  submitAdmissionApplication,
   getStudents,
   createStudent,
   updateStudent,
   deleteStudent,
+  getAdmissionConfig,
+  updateAdmissionConfig,
+  getFeeConfig,
+  updateFeeConfig,
+  getStudentConfig,
+  updateStudentConfig,
   DEFAULT_SCHOOL,
   DEFAULT_STATS,
   DEFAULT_TEAM,
   DEFAULT_FEES,
   DEFAULT_STUDENTS,
+  DEFAULT_ADMISSION_CONFIG,
+  DEFAULT_FEE_CONFIG,
+  DEFAULT_STUDENT_CONFIG,
 } from '@/lib/api';
 import {
   CreditCard,
@@ -89,6 +102,13 @@ import {
   RefreshCw,
   Edit3,
   X,
+  Eye,
+  Award,
+  Settings,
+  Sliders,
+  Calendar,
+  Layers,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -160,6 +180,36 @@ export default function AdminPage() {
     achievements: '',
   });
 
+  // Config states for Admissions, Fees, and Students
+  const [admissionConfig, setAdmissionConfig] = useState<AdmissionConfig>(DEFAULT_ADMISSION_CONFIG);
+  const [feeConfig, setFeeConfig] = useState<FeeConfig>(DEFAULT_FEE_CONFIG);
+  const [studentConfig, setStudentConfig] = useState<StudentConfig>(DEFAULT_STUDENT_CONFIG);
+
+  // Sub-tabs for richer control
+  const [admissionSubTab, setAdmissionSubTab] = useState<'applications' | 'settings'>('applications');
+  const [feeSubTab, setFeeSubTab] = useState<'table' | 'highlights'>('table');
+  const [studentSubTab, setStudentSubTab] = useState<'directory' | 'highlights'>('directory');
+
+  const [savingAdmConfig, setSavingAdmConfig] = useState(false);
+  const [savingFeeConfig, setSavingFeeConfig] = useState(false);
+  const [savingStdConfig, setSavingStdConfig] = useState(false);
+
+  const [selectedAdmissionApp, setSelectedAdmissionApp] = useState<AdmissionApplication | null>(null);
+  const [showManualAppModal, setShowManualAppModal] = useState(false);
+  const [manualAppForm, setManualAppForm] = useState({
+    studentName: '',
+    fatherName: '',
+    motherName: '',
+    dob: '',
+    gender: 'Male',
+    grade: 'Class 1',
+    phone: '',
+    email: '',
+    address: '',
+    prevSchool: '',
+    remarks: '',
+  });
+
   // Logo upload state
   const [logoUploading, setLogoUploading] = useState(false);
 
@@ -204,7 +254,7 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     setDataLoading(true);
     try {
-      const [sData, stData, tData, mData, nData, eData, fData, aData, stdData] = await Promise.all([
+      const [sData, stData, tData, mData, nData, eData, fData, aData, stdData, admCfg, feeCfg, stdCfg] = await Promise.all([
         getSchoolInfo(),
         getSchoolStats(),
         getTeamMembers(),
@@ -214,6 +264,9 @@ export default function AdminPage() {
         getFeeStructure(),
         getAdmissionApplications(),
         getStudents(),
+        getAdmissionConfig(),
+        getFeeConfig(),
+        getStudentConfig(),
       ]);
       if (sData) setSchool(sData);
       if (stData) setStats(stData);
@@ -224,6 +277,9 @@ export default function AdminPage() {
       if (fData) setFees(fData);
       if (aData) setAdmissions(aData);
       if (stdData) setStudents(stdData);
+      if (admCfg) setAdmissionConfig(admCfg);
+      if (feeCfg) setFeeConfig(feeCfg);
+      if (stdCfg) setStudentConfig(stdCfg);
     } catch (e) {
       console.error(e);
       showStatus('Failed to load some data from server', 'error');
@@ -317,6 +373,102 @@ export default function AdminPage() {
       }
     } catch {
       showStatus('Failed to refresh admissions', 'error');
+    }
+  };
+
+  // Admission Config & Manual Application Handlers
+  const handleSaveAdmissionConfig = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingAdmConfig(true);
+    try {
+      await updateAdmissionConfig(admissionConfig);
+      showStatus('Admissions portal guidelines & settings saved live to website!');
+    } catch {
+      showStatus('Failed to save admissions settings', 'error');
+    } finally {
+      setSavingAdmConfig(false);
+    }
+  };
+
+  const handleCreateManualApp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualAppForm.studentName.trim() || !manualAppForm.fatherName.trim() || !manualAppForm.phone.trim()) {
+      showStatus('Student Name, Father Name, and Phone are required', 'error');
+      return;
+    }
+    try {
+      const res = await submitAdmissionApplication(manualAppForm);
+      if (res.data) {
+        setAdmissions((prev) => [res.data, ...prev]);
+      }
+      setShowManualAppModal(false);
+      setManualAppForm({
+        studentName: '',
+        fatherName: '',
+        motherName: '',
+        dob: '',
+        gender: 'Male',
+        grade: 'Class 1',
+        phone: '',
+        email: '',
+        address: '',
+        prevSchool: '',
+        remarks: '',
+      });
+      showStatus('Walk-in / offline admission application logged successfully!');
+    } catch {
+      showStatus('Failed to save manual application', 'error');
+    }
+  };
+
+  const handleAddDocumentRow = () => {
+    setAdmissionConfig((prev) => ({
+      ...prev,
+      requiredDocuments: [...(prev.requiredDocuments || []), 'New Document Requirement'],
+    }));
+  };
+
+  const handleUpdateDocumentRow = (index: number, val: string) => {
+    setAdmissionConfig((prev) => {
+      const updated = [...(prev.requiredDocuments || [])];
+      updated[index] = val;
+      return { ...prev, requiredDocuments: updated };
+    });
+  };
+
+  const handleDeleteDocumentRow = (index: number) => {
+    setAdmissionConfig((prev) => {
+      const updated = [...(prev.requiredDocuments || [])];
+      updated.splice(index, 1);
+      return { ...prev, requiredDocuments: updated };
+    });
+  };
+
+  // Fee Config Handler
+  const handleSaveFeeConfig = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingFeeConfig(true);
+    try {
+      await updateFeeConfig(feeConfig);
+      showStatus('Fee highlights & policy terms saved live to website!');
+    } catch {
+      showStatus('Failed to save fee settings', 'error');
+    } finally {
+      setSavingFeeConfig(false);
+    }
+  };
+
+  // Student Section Config Handler
+  const handleSaveStudentConfig = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingStdConfig(true);
+    try {
+      await updateStudentConfig(studentConfig);
+      showStatus('Student community highlights & board statistics saved live!');
+    } catch {
+      showStatus('Failed to save student statistics', 'error');
+    } finally {
+      setSavingStdConfig(false);
     }
   };
 
@@ -884,142 +1036,386 @@ export default function AdminPage() {
       {/* Main Admin Workspace */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 w-full flex-1">
         {/* Top KPI Quick Dashboard */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 mb-5 sm:mb-6">
+          {/* 1. Admissions Portal */}
+          <div
+            onClick={() => setActiveTab('admissions')}
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
+              activeTab === 'admissions'
+                ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
+                : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  activeTab === 'admissions'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+              </div>
+              {admissions.filter((a) => a.status === 'pending').length > 0 && (
+                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-500 text-white animate-pulse">
+                  {admissions.filter((a) => a.status === 'pending').length} New
+                </span>
+              )}
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Admissions
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {admissions.length} Apps
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Fee Structure */}
+          <div
+            onClick={() => setActiveTab('fees')}
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
+              activeTab === 'fees'
+                ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
+                : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  activeTab === 'fees'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-sky-50 text-sky-600 border border-sky-100'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Fee Schedule
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {fees.length} Classes
+              </span>
+            </div>
+          </div>
+
+          {/* 3. Students Registry */}
+          <div
+            onClick={() => setActiveTab('students')}
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
+              activeTab === 'students'
+                ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
+                : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  activeTab === 'students'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-purple-50 text-purple-600 border border-purple-100'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Student Directory
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {students.length} Records
+              </span>
+            </div>
+          </div>
+
+          {/* 4. Enquiries Leads */}
           <div
             onClick={() => setActiveTab('enquiries')}
-            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
               activeTab === 'enquiries'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center justify-between">
               <div
-                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                   activeTab === 'enquiries'
                     ? 'bg-white/20 text-white'
                     : 'bg-rose-50 text-rose-600 border border-rose-100'
                 }`}
               >
-                <Inbox className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Inbox className="w-4 h-4" />
               </div>
-              <div>
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
-                  Admission Leads
+              {enquiries.filter((e) => e.status === 'new').length > 0 && (
+                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-rose-500 text-white animate-pulse">
+                  {enquiries.filter((e) => e.status === 'new').length} New
                 </span>
-                <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
-                  <span className="text-base sm:text-xl font-black">
-                    {enquiries.length}
-                  </span>
-                  {enquiries.filter((e) => e.status === 'new').length > 0 && (
-                    <span
-                      className={`text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full ${
-                        activeTab === 'enquiries'
-                          ? 'bg-white text-rose-600'
-                          : 'bg-rose-500 text-white animate-pulse'
-                      }`}
-                    >
-                      {enquiries.filter((e) => e.status === 'new').length} New
-                    </span>
-                  )}
-                </div>
-              </div>
+              )}
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Admission Leads
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {enquiries.length} Enquiries
+              </span>
             </div>
           </div>
 
+          {/* 5. Leadership Staff */}
           <div
             onClick={() => setActiveTab('team')}
-            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
               activeTab === 'team'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center justify-between">
               <div
-                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                   activeTab === 'team'
                     ? 'bg-white/20 text-white'
-                    : 'bg-sky-50 text-sky-600 border border-sky-100'
+                    : 'bg-indigo-50 text-indigo-600 border border-indigo-100'
                 }`}
               >
-                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Users className="w-4 h-4" />
               </div>
-              <div>
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
-                  Leadership Staff
-                </span>
-                <span className="text-base sm:text-xl font-black block mt-0.5">
-                  {team.length} Positions
-                </span>
-              </div>
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Leadership
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {team.length} Positions
+              </span>
             </div>
           </div>
 
-          <div
-            onClick={() => setActiveTab('media')}
-            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
-              activeTab === 'media'
-                ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
-                : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
-            }`}
-          >
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <div
-                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
-                  activeTab === 'media'
-                    ? 'bg-white/20 text-white'
-                    : 'bg-sky-50 text-sky-600 border border-sky-100'
-                }`}
-              >
-                <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div>
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
-                  Campus Gallery
-                </span>
-                <span className="text-base sm:text-xl font-black block mt-0.5">
-                  {media.length} Photos
-                </span>
-              </div>
-            </div>
-          </div>
-
+          {/* 6. Notices */}
           <div
             onClick={() => setActiveTab('notices')}
-            className={`cursor-pointer rounded-2xl p-3 sm:p-5 border transition shadow-sm flex items-center justify-between ${
+            className={`cursor-pointer rounded-2xl p-3 sm:p-4 border transition shadow-sm flex flex-col justify-between ${
               activeTab === 'notices'
                 ? 'bg-sky-600 text-white border-sky-600 ring-2 ring-sky-300'
                 : 'bg-white hover:border-sky-300 text-slate-800 border-slate-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center justify-between">
               <div
-                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                   activeTab === 'notices'
                     ? 'bg-white/20 text-white'
-                    : 'bg-sky-50 text-sky-600 border border-sky-100'
+                    : 'bg-amber-50 text-amber-600 border border-amber-100'
                 }`}
               >
-                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Bell className="w-4 h-4" />
               </div>
-              <div>
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider block opacity-75">
-                  Notice Board
-                </span>
-                <span className="text-base sm:text-xl font-black block mt-0.5">
-                  {notices.length} Circulars
-                </span>
-              </div>
+            </div>
+            <div className="mt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">
+                Notice Board
+              </span>
+              <span className="text-base sm:text-lg font-black block mt-0.5">
+                {notices.length} Circulars
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs (Mobile touch-friendly horizontal scroll) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 border-b border-slate-200 no-scrollbar touch-pan-x">
+        {/* PROMINENT CORE MODULES QUICK-LAUNCH BAR */}
+        <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-4 sm:p-5 mb-6 text-white shadow-xl border border-sky-500/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3.5">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                Featured Academics Management
+              </span>
+              <span className="text-xs text-slate-300 hidden md:inline">
+                Click any module below to update live website data:
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab('admissions')}
+              className={`p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
+                activeTab === 'admissions'
+                  ? 'bg-white text-slate-900 shadow-2xl ring-4 ring-sky-400/50 scale-[1.01]'
+                  : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    activeTab === 'admissions' ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-500/20 text-emerald-300'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider font-extrabold block opacity-75">
+                    Parent Portal
+                  </span>
+                  <span className="text-base font-black">Admissions</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-black block ${
+                    activeTab === 'admissions' ? 'bg-slate-900 text-white' : 'bg-white/20 text-white'
+                  }`}
+                >
+                  {admissions.length} Apps
+                </span>
+                <span className="text-[10px] opacity-75 mt-0.5 block">Update & Manage</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('fees')}
+              className={`p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
+                activeTab === 'fees'
+                  ? 'bg-white text-slate-900 shadow-2xl ring-4 ring-sky-400/50 scale-[1.01]'
+                  : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    activeTab === 'fees' ? 'bg-sky-600 text-white shadow-md' : 'bg-sky-500/20 text-sky-300'
+                  }`}
+                >
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider font-extrabold block opacity-75">
+                    Tuition & Schedule
+                  </span>
+                  <span className="text-base font-black">Fee Structure</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-black block ${
+                    activeTab === 'fees' ? 'bg-slate-900 text-white' : 'bg-white/20 text-white'
+                  }`}
+                >
+                  {fees.length} Grades
+                </span>
+                <span className="text-[10px] opacity-75 mt-0.5 block">Update & Manage</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('students')}
+              className={`p-4 rounded-2xl text-left transition-all flex items-center justify-between ${
+                activeTab === 'students'
+                  ? 'bg-white text-slate-900 shadow-2xl ring-4 ring-sky-400/50 scale-[1.01]'
+                  : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                    activeTab === 'students' ? 'bg-purple-600 text-white shadow-md' : 'bg-purple-500/20 text-purple-300'
+                  }`}
+                >
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider font-extrabold block opacity-75">
+                    Directory & Toppers
+                  </span>
+                  <span className="text-base font-black">Students</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-black block ${
+                    activeTab === 'students' ? 'bg-slate-900 text-white' : 'bg-white/20 text-white'
+                  }`}
+                >
+                  {students.length} Records
+                </span>
+                <span className="text-[10px] opacity-75 mt-0.5 block">Update & Manage</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Secondary Navigation Tabs (Multi-row wrap, never hidden or cut off) */}
+        <div className="flex items-center flex-wrap gap-2 pb-3 mb-6 sm:mb-8 border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab('admissions')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'admissions'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
+                : 'bg-white text-slate-700 hover:bg-emerald-50 border border-slate-200'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-emerald-500" />
+            <span>Admissions Portal ({admissions.length})</span>
+            {admissions.filter((a) => a.status === 'pending').length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white">
+                {admissions.filter((a) => a.status === 'pending').length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('fees')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'fees'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 text-sky-500" />
+            <span>Fee Structure ({fees.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('students')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'students'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25'
+                : 'bg-white text-slate-700 hover:bg-purple-50 border border-slate-200'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4 text-purple-500" />
+            <span>Students Directory ({students.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('enquiries')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition relative ${
+              activeTab === 'enquiries'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <Inbox className="w-4 h-4" />
+            <span>Admission Leads ({enquiries.length})</span>
+            {enquiries.filter((e) => e.status === 'new').length > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500 text-white">
+                {enquiries.filter((e) => e.status === 'new').length}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setActiveTab('team')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'team'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
@@ -1030,37 +1426,44 @@ export default function AdminPage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('enquiries')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition relative ${
-              activeTab === 'enquiries'
+            onClick={() => setActiveTab('notices')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'notices'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
             }`}
           >
-            <Inbox className="w-4 h-4" />
-            <span>Admission Enquiries ({enquiries.length})</span>
-            {enquiries.filter((e) => e.status === 'new').length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500 text-white animate-pulse">
-                {enquiries.filter((e) => e.status === 'new').length} New
-              </span>
-            )}
+            <Bell className="w-4 h-4" />
+            <span>Notice Board ({notices.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('media')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              activeTab === 'media'
+                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
+                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
+            }`}
+          >
+            <Camera className="w-4 h-4" />
+            <span>Campus Gallery ({media.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('announcement')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'announcement'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
             }`}
           >
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>Top Announcement Bar</span>
+            <span>Top Announcement</span>
           </button>
 
           <button
             onClick={() => setActiveTab('branding')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'branding'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
@@ -1072,91 +1475,26 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('general')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'general'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
             }`}
           >
             <Building className="w-4 h-4" />
-            <span>School Info & Contact</span>
+            <span>School Info</span>
           </button>
 
           <button
             onClick={() => setActiveTab('stats')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               activeTab === 'stats'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
                 : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            <span>Key Stats Counter</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('media')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
-              activeTab === 'media'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
-            }`}
-          >
-            <Camera className="w-4 h-4" />
-            <span>Gallery & Media ({media.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('notices')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
-              activeTab === 'notices'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
-            }`}
-          >
-            <Bell className="w-4 h-4" />
-            <span>Notice Board ({notices.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('fees')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
-              activeTab === 'fees'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
-            }`}
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>Fee Structure ({fees.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('admissions')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition relative ${
-              activeTab === 'admissions'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Admission Forms ({admissions.length})</span>
-            {admissions.filter((a) => a.status === 'pending').length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse">
-                {admissions.filter((a) => a.status === 'pending').length} Pending
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('students')}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition ${
-              activeTab === 'students'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/25'
-                : 'bg-white text-slate-700 hover:bg-sky-50 border border-slate-200'
-            }`}
-          >
-            <GraduationCap className="w-4 h-4" />
-            <span>Students Directory ({students.length})</span>
+            <span>Key Stats</span>
           </button>
         </div>
 
@@ -2445,18 +2783,21 @@ export default function AdminPage() {
         {/* TAB 9: FEE STRUCTURE MANAGEMENT */}
         {activeTab === 'fees' && (
           <div className="space-y-6">
-            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-sky-600" />
-                  <span>Fee Structure Configuration</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-800 mb-2">
+                  <CreditCard className="w-3.5 h-3.5 text-sky-600" />
+                  Fees Control Centre
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900">
+                  School Fee Structure & Policy Manager
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  Update class-wise fee schedules, tuition fees, and payment frequencies visible to parents on the website.
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+                  Update class-wise fee schedules, tuition terms, sibling concessions, scholarships, and installment options shown to parents.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddFeeModal(true)}
@@ -2480,106 +2821,260 @@ export default function AdminPage() {
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      <span>Save All Changes</span>
+                      <span>Save Table</span>
                     </>
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Fee Table */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3 px-3">Class / Grade</th>
-                    <th className="py-3 px-3">One-time Admission</th>
-                    <th className="py-3 px-3">Tuition Fee</th>
-                    <th className="py-3 px-3">Exam Fee</th>
-                    <th className="py-3 px-3">Other / Activity</th>
-                    <th className="py-3 px-3">Total Year Approx</th>
-                    <th className="py-3 px-3">Installment</th>
-                    <th className="py-3 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
-                  {fees.map((fee) => (
-                    <tr key={fee._id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.className}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'className', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-900 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.admissionFee}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'admissionFee', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.tuitionFee}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'tuitionFee', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-emerald-700 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.examFee}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'examFee', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.otherFee}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'otherFee', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.totalFee}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'totalFee', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-sky-300 text-xs font-bold text-sky-700 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3">
-                        <input
-                          type="text"
-                          value={fee.installment || 'Quarterly'}
-                          onChange={(e) => handleUpdateFeeField(fee._id, 'installment', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
-                        />
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteFeeRow(fee._id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 transition"
-                          title="Delete fee row"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span>💡 Tip: Click "Save All Changes" in the top bar to apply fee updates live to the website.</span>
-              </div>
+            {/* Sub-tab Navigation */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <button
+                type="button"
+                onClick={() => setFeeSubTab('table')}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  feeSubTab === 'table'
+                    ? 'bg-sky-600 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>Class-Wise Fee Schedule ({fees.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeeSubTab('highlights')}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+                  feeSubTab === 'highlights'
+                    ? 'bg-sky-600 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                <span>Fee Policy & Concession Highlights</span>
+              </button>
             </div>
+
+            {/* Sub-tab 1: Table */}
+            {feeSubTab === 'table' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm overflow-x-auto space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-700">
+                    💡 Directly edit values in any cell below, then click "Save Table".
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    Total Classes: {fees.length}
+                  </span>
+                </div>
+
+                <table className="w-full text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-3 px-3">Class / Grade</th>
+                      <th className="py-3 px-3">One-time Admission</th>
+                      <th className="py-3 px-3">Tuition Fee</th>
+                      <th className="py-3 px-3">Exam Fee</th>
+                      <th className="py-3 px-3">Other / Activity</th>
+                      <th className="py-3 px-3">Total Year Approx</th>
+                      <th className="py-3 px-3">Installment</th>
+                      <th className="py-3 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {fees.map((fee) => (
+                      <tr key={fee._id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.className}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'className', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-900 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.admissionFee}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'admissionFee', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.tuitionFee}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'tuitionFee', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-emerald-700 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.examFee}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'examFee', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.otherFee}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'otherFee', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.totalFee}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'totalFee', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-sky-300 text-xs font-bold text-sky-700 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3">
+                          <input
+                            type="text"
+                            value={fee.installment || 'Quarterly'}
+                            onChange={(e) => handleUpdateFeeField(fee._id, 'installment', e.target.value)}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-800 bg-white"
+                          />
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFeeRow(fee._id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 transition"
+                            title="Delete fee row"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Sub-tab 2: Highlights & Policy */}
+            {feeSubTab === 'highlights' && (
+              <form onSubmit={handleSaveFeeConfig} className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-base">Fee Section Banner & Highlights</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">Customize the benefits, discount terms, and scholarships shown on the website.</p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={savingFeeConfig}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition disabled:opacity-50"
+                  >
+                    {savingFeeConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save Policy Settings</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Academic Session Year</label>
+                    <input
+                      type="text"
+                      value={feeConfig.sessionYear || '2025–26'}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, sessionYear: e.target.value })}
+                      placeholder="e.g. 2025–26"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Section Headline</label>
+                    <input
+                      type="text"
+                      value={feeConfig.headline || 'Affordable Excellence, No Hidden Charges'}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, headline: e.target.value })}
+                      placeholder="Affordable Excellence, No Hidden Charges"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Section Subheadline / Description</label>
+                  <textarea
+                    rows={2}
+                    value={feeConfig.subheadline || ''}
+                    onChange={(e) => setFeeConfig({ ...feeConfig, subheadline: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-slate-100">
+                  <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 space-y-2">
+                    <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider">Sibling Concession Offer</label>
+                    <input
+                      type="text"
+                      value={feeConfig.siblingConcession || '15% Sibling Concession'}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, siblingConcession: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-bold text-amber-900"
+                    />
+                    <textarea
+                      rows={2}
+                      value={feeConfig.siblingDesc || ''}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, siblingDesc: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/70 space-y-2">
+                    <label className="block text-xs font-bold text-emerald-900 uppercase tracking-wider">Merit Scholarship Offer</label>
+                    <input
+                      type="text"
+                      value={feeConfig.scholarshipInfo || 'Merit Scholarships'}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, scholarshipInfo: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 text-xs font-bold text-emerald-900"
+                    />
+                    <textarea
+                      rows={2}
+                      value={feeConfig.scholarshipDesc || ''}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, scholarshipDesc: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 text-xs"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-sky-50/60 border border-sky-200/70 space-y-2">
+                    <label className="block text-xs font-bold text-sky-900 uppercase tracking-wider">Installments Information</label>
+                    <textarea
+                      rows={2}
+                      value={feeConfig.quarterlyDesc || ''}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, quarterlyDesc: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-sky-300 text-xs"
+                    />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-200/70 space-y-2">
+                    <label className="block text-xs font-bold text-purple-900 uppercase tracking-wider">Zero Hidden Charges Policy</label>
+                    <textarea
+                      rows={2}
+                      value={feeConfig.zeroHiddenDesc || ''}
+                      onChange={(e) => setFeeConfig({ ...feeConfig, zeroHiddenDesc: e.target.value })}
+                      className="w-full px-3 py-1.5 rounded-lg border border-purple-300 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingFeeConfig}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save All Policy Settings</span>
+                  </button>
+                </div>
+              </form>
+            )}
 
             {/* Modal: Add New Grade Fee Row */}
             {showAddFeeModal && (
@@ -2696,312 +3191,983 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* TAB 10: ADMISSION APPLICATIONS MANAGEMENT */}
+        {/* TAB 10: ADMISSION APPLICATIONS & PORTAL CONFIG */}
         {activeTab === 'admissions' && (
           <div className="space-y-6">
-            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* Header with Sub-tabs */}
+            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-sky-600" />
-                  <span>Online Admission Applications ({admissions.length})</span>
+                  <span>Admissions Command Center</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  Manage applications submitted online via the admission portal. Review, schedule interactions, or update status.
+                  Manage online parent applications, register walk-in candidates, and update public admission portal guidelines.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleRefreshAdmissions}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-sm transition"
-                >
-                  <RefreshCw className="w-4 h-4 text-sky-600" />
-                  <span>Refresh List</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Filter and Search Bar */}
-            <div className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                {(['all', 'pending', 'approved', 'contacted', 'rejected'] as const).map((filter) => (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="bg-white p-1 rounded-2xl border border-sky-200 flex gap-1 shadow-sm">
                   <button
-                    key={filter}
-                    onClick={() => setAdmissionFilter(filter)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
-                      admissionFilter === filter
+                    type="button"
+                    onClick={() => setAdmissionSubTab('applications')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      admissionSubTab === 'applications'
                         ? 'bg-sky-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
-                    {filter} (
-                    {filter === 'all'
-                      ? admissions.length
-                      : admissions.filter((a) => a.status === filter).length}
-                    )
+                    Applications Registry ({admissions.length})
                   </button>
-                ))}
-              </div>
-
-              <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search student, parent, phone..."
-                  value={admissionSearch}
-                  onChange={(e) => setAdmissionSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-            </div>
-
-            {/* Admissions List */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-4">
-              {admissions
-                .filter((app) => {
-                  const matchFilter = admissionFilter === 'all' || app.status === admissionFilter;
-                  const matchSearch =
-                    app.studentName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
-                    app.fatherName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
-                    app.phone.includes(admissionSearch) ||
-                    app.grade.toLowerCase().includes(admissionSearch.toLowerCase());
-                  return matchFilter && matchSearch;
-                })
-                .map((app) => (
-                  <div
-                    key={app._id}
-                    className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  <button
+                    type="button"
+                    onClick={() => setAdmissionSubTab('settings')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      admissionSubTab === 'settings'
+                        ? 'bg-sky-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
                   >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-3">
-                        <h4 className="font-bold text-slate-900 text-base">{app.studentName}</h4>
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">
-                          {app.grade}
-                        </span>
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            app.status === 'approved'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : app.status === 'rejected'
-                              ? 'bg-rose-100 text-rose-800'
-                              : app.status === 'contacted'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {app.status}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
-                        <span><strong>Father:</strong> {app.fatherName}</span>
-                        {app.motherName && <span><strong>Mother:</strong> {app.motherName}</span>}
-                        <span><strong>Phone:</strong> {app.phone}</span>
-                        {app.email && <span><strong>Email:</strong> {app.email}</span>}
-                        <span><strong>DOB:</strong> {app.dob}</span>
-                      </div>
-
-                      {app.prevSchool && (
-                        <p className="text-xs text-slate-500">
-                          <strong>Prev School:</strong> {app.prevSchool}
-                        </p>
-                      )}
-
-                      {app.remarks && (
-                        <p className="text-xs text-slate-500 bg-white p-2 rounded-lg border border-slate-200 inline-block">
-                          💬 {app.remarks}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Status Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'approved')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                          app.status === 'approved'
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50'
-                        }`}
-                      >
-                        Approve
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'contacted')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                          app.status === 'contacted'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-blue-300 text-blue-700 hover:bg-blue-50'
-                        }`}
-                      >
-                        Contacted
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateAdmissionAppStatus(app._id, 'rejected')}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                          app.status === 'rejected'
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50'
-                        }`}
-                      >
-                        Reject
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteAdmissionApp(app._id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 transition"
-                        title="Delete application"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
-              {admissions.length === 0 && (
-                <div className="text-center py-12 text-slate-400 text-sm">
-                  No admission applications received yet.
+                    Portal Guidelines & Checklist
+                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* TAB 11: STUDENTS DIRECTORY MANAGEMENT */}
-        {activeTab === 'students' && (
-          <div className="space-y-6">
-            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-sky-600" />
-                  <span>Student Directory & Achievers Registry</span>
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  Manage student profiles, academic achievers, board toppers, and verifiable student directory entries.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingStudentId(null);
-                    setStudentForm({
-                      name: '',
-                      rollNo: '',
-                      grade: 'Class 1',
-                      section: 'A',
-                      gender: 'Male',
-                      fatherName: '',
-                      phone: '',
-                      dob: '',
-                      bloodGroup: '',
-                      performance: '',
-                      achievements: '',
-                    });
-                    setShowStudentModal(true);
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add New Student</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Search Bar */}
-            <div className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm flex items-center justify-between">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search student by name, roll no, grade..."
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                />
-              </div>
-              <span className="text-xs font-semibold text-slate-500">
-                Total Records: {students.length}
-              </span>
-            </div>
-
-            {/* Students Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {students
-                .filter((s) => {
-                  const query = studentSearch.toLowerCase();
-                  return (
-                    s.name.toLowerCase().includes(query) ||
-                    s.rollNo.toLowerCase().includes(query) ||
-                    s.grade.toLowerCase().includes(query) ||
-                    (s.achievements && s.achievements.toLowerCase().includes(query))
-                  );
-                })
-                .map((student) => (
-                  <div
-                    key={student._id}
-                    className="p-5 rounded-3xl bg-white border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                {admissionSubTab === 'applications' ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowManualAppModal(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Log Walk-in Application</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRefreshAdmissions}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-sm transition"
+                      title="Refresh from server"
+                    >
+                      <RefreshCw className="w-4 h-4 text-sky-600" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={savingAdmConfig}
+                    onClick={handleSaveAdmissionConfig}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition"
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono text-xs font-bold">
-                          {student.rollNo}
-                        </span>
-                        <div className="flex items-center gap-1">
+                    {savingAdmConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save Guidelines Live</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* SUB-TAB 1: APPLICATIONS LIST */}
+            {admissionSubTab === 'applications' && (
+              <div className="space-y-4">
+                {/* Filter and Search Bar */}
+                <div className="bg-white rounded-3xl p-5 border border-sky-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                    {(['all', 'pending', 'approved', 'contacted', 'rejected'] as const).map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setAdmissionFilter(filter)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition ${
+                          admissionFilter === filter
+                            ? 'bg-sky-600 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {filter} (
+                        {filter === 'all'
+                          ? admissions.length
+                          : admissions.filter((a) => a.status === filter).length}
+                        )
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative w-full sm:w-72">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search candidate, parent, phone..."
+                      value={admissionSearch}
+                      onChange={(e) => setAdmissionSearch(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Applications Registry Cards */}
+                <div className="bg-white rounded-3xl p-6 border border-sky-100 shadow-sm space-y-4">
+                  {admissions
+                    .filter((app) => {
+                      const matchFilter = admissionFilter === 'all' || app.status === admissionFilter;
+                      const matchSearch =
+                        app.studentName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
+                        app.fatherName.toLowerCase().includes(admissionSearch.toLowerCase()) ||
+                        app.phone.includes(admissionSearch) ||
+                        app.grade.toLowerCase().includes(admissionSearch.toLowerCase());
+                      return matchFilter && matchSearch;
+                    })
+                    .map((app) => (
+                      <div
+                        key={app._id}
+                        className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="font-bold text-slate-900 text-base">{app.studentName}</h4>
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">
+                              {app.grade}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                app.status === 'approved'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : app.status === 'rejected'
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : app.status === 'contacted'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-amber-100 text-amber-800'
+                              }`}
+                            >
+                              {app.status}
+                            </span>
+                            {app.submittedAt && (
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                {new Date(app.submittedAt).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+                            <span><strong>Father:</strong> {app.fatherName}</span>
+                            {app.motherName && <span><strong>Mother:</strong> {app.motherName}</span>}
+                            <span><strong>Phone:</strong> <a href={`tel:${app.phone}`} className="text-sky-600 hover:underline">{app.phone}</a></span>
+                            {app.email && <span><strong>Email:</strong> {app.email}</span>}
+                            <span><strong>DOB:</strong> {app.dob}</span>
+                            {app.gender && <span><strong>Gender:</strong> {app.gender}</span>}
+                          </div>
+
+                          {app.prevSchool && (
+                            <p className="text-xs text-slate-500">
+                              <strong>Previous School:</strong> {app.prevSchool}
+                            </p>
+                          )}
+
+                          {app.remarks && (
+                            <p className="text-xs text-slate-600 bg-white p-2 rounded-lg border border-slate-200 inline-block">
+                              💬 {app.remarks}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center flex-wrap gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-200">
                           <button
                             type="button"
-                            onClick={() => handleOpenEditStudent(student)}
-                            className="p-1.5 text-slate-400 hover:text-sky-600 transition"
-                            title="Edit student"
+                            onClick={() => setSelectedAdmissionApp(app)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition shadow-sm"
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5 text-sky-600" />
+                            <span>Details</span>
                           </button>
+
                           <button
                             type="button"
-                            onClick={() => handleDeleteStudentItem(student._id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 transition"
-                            title="Delete student"
+                            onClick={() => handleUpdateAdmissionAppStatus(app._id, 'approved')}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                              app.status === 'approved'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50'
+                            }`}
+                          >
+                            Approve
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateAdmissionAppStatus(app._id, 'contacted')}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                              app.status === 'contacted'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white border border-blue-300 text-blue-700 hover:bg-blue-50'
+                            }`}
+                          >
+                            Contacted
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateAdmissionAppStatus(app._id, 'rejected')}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                              app.status === 'rejected'
+                                ? 'bg-rose-600 text-white'
+                                : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50'
+                            }`}
+                          >
+                            Reject
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAdmissionApp(app._id)}
+                            className="p-2 text-slate-400 hover:text-rose-600 transition"
+                            title="Delete record"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
+                    ))}
 
-                      <h4 className="font-bold text-slate-900 text-base">{student.name}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {student.grade} • Section {student.section}
-                      </p>
+                  {admissions.length === 0 && (
+                    <div className="text-center py-12 text-slate-400 text-sm">
+                      No admission applications registered yet. Click &quot;Log Walk-in Application&quot; or wait for online submissions.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
-                      {student.performance && (
-                        <div className="mt-3 inline-block px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-                          🏆 {student.performance}
-                        </div>
-                      )}
+            {/* SUB-TAB 2: PORTAL GUIDELINES & SETTINGS FORM */}
+            {admissionSubTab === 'settings' && (
+              <form onSubmit={handleSaveAdmissionConfig} className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-6">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-sky-600" />
+                    <span>Parent-Facing Admission Guidelines & Checklist</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Every field below directly controls what parents see on the website&apos;s Admissions section.
+                  </p>
+                </div>
 
-                      {student.achievements && (
-                        <p className="mt-2 text-xs text-slate-600 line-clamp-2">
-                          🌟 {student.achievements}
-                        </p>
-                      )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Academic Session Year *</label>
+                    <input
+                      type="text"
+                      required
+                      value={admissionConfig.sessionYear || '2026 - 2027'}
+                      onChange={(e) => setAdmissionConfig({ ...admissionConfig, sessionYear: e.target.value })}
+                      placeholder="e.g. 2026 - 2027"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-sky-900"
+                    />
+                  </div>
 
-                      <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1">
-                        <div><strong>Parent:</strong> {student.fatherName}</div>
-                        <div><strong>Phone:</strong> {student.phone}</div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Section Headline *</label>
+                    <input
+                      type="text"
+                      required
+                      value={admissionConfig.headline || 'Admissions Open for Session 2026-27'}
+                      onChange={(e) => setAdmissionConfig({ ...admissionConfig, headline: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Introductory Subheadline</label>
+                  <textarea
+                    rows={2}
+                    value={admissionConfig.subheadline || ''}
+                    onChange={(e) => setAdmissionConfig({ ...admissionConfig, subheadline: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs"
+                  />
+                </div>
+
+                {/* 3 Step Guide Config */}
+                <div className="pt-4 border-t border-slate-100">
+                  <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 text-sky-800">
+                    Step-by-Step Admission Process (3 Steps)
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-2xl bg-sky-50/50 border border-sky-100 space-y-2">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-sky-200 text-sky-900">Step 1</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={admissionConfig.step1Title || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step1Title: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Description</label>
+                        <textarea
+                          rows={2}
+                          value={admissionConfig.step1Desc || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step1Desc: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-sky-50/50 border border-sky-100 space-y-2">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-sky-200 text-sky-900">Step 2</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={admissionConfig.step2Title || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step2Title: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Description</label>
+                        <textarea
+                          rows={2}
+                          value={admissionConfig.step2Desc || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step2Desc: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-sky-50/50 border border-sky-100 space-y-2">
+                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-sky-200 text-sky-900">Step 3</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={admissionConfig.step3Title || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step3Title: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Description</label>
+                        <textarea
+                          rows={2}
+                          value={admissionConfig.step3Desc || ''}
+                          onChange={(e) => setAdmissionConfig({ ...admissionConfig, step3Desc: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs"
+                        />
                       </div>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Required Documents Checklist */}
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider text-sky-800">
+                        Required Documents Checklist ({admissionConfig.requiredDocuments?.length || 0})
+                      </h5>
+                      <p className="text-[11px] text-slate-500">Items displayed in the checklist for parents before visiting.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddDocumentRow}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-xs border border-sky-200"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Document Item</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {admissionConfig.requiredDocuments?.map((doc, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <input
+                          type="text"
+                          value={doc}
+                          onChange={(e) => handleUpdateDocumentRow(idx, e.target.value)}
+                          className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs"
+                          placeholder="e.g. 4 Passport-size photographs of the student"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteDocumentRow(idx)}
+                          className="p-2 text-slate-400 hover:text-rose-600 transition"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Helpline & Timings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Admissions Helpline Phone</label>
+                    <input
+                      type="text"
+                      value={admissionConfig.helplinePhone || ''}
+                      onChange={(e) => setAdmissionConfig({ ...admissionConfig, helplinePhone: e.target.value })}
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Office Admissions Desk Timings</label>
+                    <input
+                      type="text"
+                      value={admissionConfig.officeTimings || ''}
+                      onChange={(e) => setAdmissionConfig({ ...admissionConfig, officeTimings: e.target.value })}
+                      placeholder="e.g. Mon - Sat: 8:00 AM - 3:00 PM"
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingAdmConfig}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition"
+                  >
+                    {savingAdmConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save All Admission Guidelines Live</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Modal: View Full Admission Application Details */}
+            {selectedAdmissionApp && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-slate-900 text-lg">{selectedAdmissionApp.studentName}</h4>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">
+                          {selectedAdmissionApp.grade}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 font-mono mt-0.5">ID: {selectedAdmissionApp._id}</p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedAdmissionApp(null)}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div><span className="text-slate-400 block">Father&apos;s Name</span><strong>{selectedAdmissionApp.fatherName}</strong></div>
+                    <div><span className="text-slate-400 block">Mother&apos;s Name</span><strong>{selectedAdmissionApp.motherName || 'Not specified'}</strong></div>
+                    <div><span className="text-slate-400 block">Phone</span><strong>{selectedAdmissionApp.phone}</strong></div>
+                    <div><span className="text-slate-400 block">Email</span><strong>{selectedAdmissionApp.email || 'N/A'}</strong></div>
+                    <div><span className="text-slate-400 block">Date of Birth</span><strong>{selectedAdmissionApp.dob}</strong></div>
+                    <div><span className="text-slate-400 block">Gender</span><strong>{selectedAdmissionApp.gender || 'Not specified'}</strong></div>
+                    <div className="col-span-2"><span className="text-slate-400 block">Residence Address</span><strong>{selectedAdmissionApp.address || 'N/A'}</strong></div>
+                    <div className="col-span-2"><span className="text-slate-400 block">Previous School</span><strong>{selectedAdmissionApp.prevSchool || 'N/A'}</strong></div>
+                  </div>
+
+                  {selectedAdmissionApp.remarks && (
+                    <div className="text-xs bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-xl">
+                      <strong>Remarks / Reason for Admission:</strong>
+                      <p className="mt-1">{selectedAdmissionApp.remarks}</p>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-slate-500">Status:</span>
+                      <button
+                        onClick={() => handleUpdateAdmissionAppStatus(selectedAdmissionApp._id, 'approved')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                          selectedAdmissionApp.status === 'approved' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleUpdateAdmissionAppStatus(selectedAdmissionApp._id, 'contacted')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                          selectedAdmissionApp.status === 'contacted' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        Contacted
+                      </button>
+                      <button
+                        onClick={() => handleUpdateAdmissionAppStatus(selectedAdmissionApp._id, 'rejected')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                          selectedAdmissionApp.status === 'rejected' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        Reject
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAdmissionApp(null)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
+                    >
+                      Close Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: Log Walk-in Admission Application */}
+            {showManualAppModal && (
+              <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-lg">Log Walk-in Candidate</h4>
+                      <p className="text-xs text-slate-500">Record a parent who visited the school admissions desk in person.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowManualAppModal(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleCreateManualApp} className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Student Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={manualAppForm.studentName}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, studentName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                          placeholder="e.g. Vivaan Joshi"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Grade Applying *</label>
+                        <input
+                          type="text"
+                          required
+                          value={manualAppForm.grade}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, grade: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                          placeholder="e.g. Class 1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Father&apos;s Name *</label>
+                        <input
+                          type="text"
+                          required
+                          value={manualAppForm.fatherName}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, fatherName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Mother&apos;s Name</label>
+                        <input
+                          type="text"
+                          value={manualAppForm.motherName}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, motherName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={manualAppForm.phone}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, phone: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                          placeholder="+91 98765 43210"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Date of Birth</label>
+                        <input
+                          type="date"
+                          value={manualAppForm.dob}
+                          onChange={(e) => setManualAppForm({ ...manualAppForm, dob: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Residence Address</label>
+                      <input
+                        type="text"
+                        value={manualAppForm.address}
+                        onChange={(e) => setManualAppForm({ ...manualAppForm, address: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Previous School & Remarks</label>
+                      <textarea
+                        rows={2}
+                        value={manualAppForm.remarks}
+                        onChange={(e) => setManualAppForm({ ...manualAppForm, remarks: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs"
+                        placeholder="Visited admissions desk, documents verified, etc."
+                      />
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => setShowManualAppModal(false)}
+                        className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-sm"
+                      >
+                        Register Candidate
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 11: STUDENTS DIRECTORY & BOARD HIGHLIGHTS */}
+        {activeTab === 'students' && (
+          <div className="space-y-6">
+            {/* Header with Sub-tabs */}
+            <div className="bg-sky-50 border border-sky-200 rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-sky-600" />
+                  <span>Students &amp; Achievers Hub</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                  Manage student records, academic achievers, board toppers, and configure public student community statistics.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="bg-white p-1 rounded-2xl border border-sky-200 flex gap-1 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setStudentSubTab('directory')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      studentSubTab === 'directory'
+                        ? 'bg-sky-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Student Directory ({students.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudentSubTab('highlights')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                      studentSubTab === 'highlights'
+                        ? 'bg-sky-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    Board Exam &amp; Section Highlights
+                  </button>
+                </div>
+
+                {studentSubTab === 'directory' ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingStudentId(null);
+                      setStudentForm({
+                        name: '',
+                        rollNo: '',
+                        grade: 'Class 1',
+                        section: 'A',
+                        gender: 'Male',
+                        fatherName: '',
+                        phone: '',
+                        dob: '',
+                        bloodGroup: '',
+                        performance: '',
+                        achievements: '',
+                      });
+                      setShowStudentModal(true);
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 transition"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add New Student</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={savingStdConfig}
+                    onClick={handleSaveStudentConfig}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition"
+                  >
+                    {savingStdConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save Highlights Live</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Modal: Add / Edit Student */}
+            {/* SUB-TAB 1: STUDENT DIRECTORY */}
+            {studentSubTab === 'directory' && (
+              <div className="space-y-4">
+                {/* Search Bar */}
+                <div className="bg-white rounded-3xl p-5 border border-sky-100 shadow-sm flex items-center justify-between">
+                  <div className="relative w-full sm:w-80">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search student by name, roll no, grade..."
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">
+                    Total Records: {students.length}
+                  </span>
+                </div>
+
+                {/* Students Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {students
+                    .filter((s) => {
+                      const query = studentSearch.toLowerCase();
+                      return (
+                        s.name.toLowerCase().includes(query) ||
+                        s.rollNo.toLowerCase().includes(query) ||
+                        s.grade.toLowerCase().includes(query) ||
+                        (s.achievements && s.achievements.toLowerCase().includes(query))
+                      );
+                    })
+                    .map((student) => (
+                      <div
+                        key={student._id}
+                        className="p-5 rounded-3xl bg-white border border-sky-100 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-800 font-mono text-xs font-bold">
+                              {student.rollNo}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditStudent(student)}
+                                className="p-1.5 text-slate-400 hover:text-sky-600 transition"
+                                title="Edit student"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteStudentItem(student._id)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 transition"
+                                title="Delete student"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <h4 className="font-bold text-slate-900 text-base">{student.name}</h4>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {student.grade} • Section {student.section}
+                          </p>
+
+                          {student.performance && (
+                            <div className="mt-3 inline-block px-2.5 py-1 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+                              🏆 {student.performance}
+                            </div>
+                          )}
+
+                          {student.achievements && (
+                            <p className="mt-2 text-xs text-slate-600 line-clamp-2">
+                              🌟 {student.achievements}
+                            </p>
+                          )}
+
+                          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+                            <div><strong>Parent:</strong> {student.fatherName}</div>
+                            <div><strong>Phone:</strong> {student.phone}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* SUB-TAB 2: BOARD HIGHLIGHTS & SECTION SETTINGS */}
+            {studentSubTab === 'highlights' && (
+              <form onSubmit={handleSaveStudentConfig} className="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-sm space-y-6">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <Award className="w-4 h-4 text-sky-600" />
+                    <span>Public Student Community &amp; Board Exam Metrics</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Control the four prominent achievement counters shown to prospective parents in the Students section.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Section Headline</label>
+                    <input
+                      type="text"
+                      value={studentConfig.headline || 'Our Students & Achievers'}
+                      onChange={(e) => setStudentConfig({ ...studentConfig, headline: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Section Subheadline</label>
+                    <input
+                      type="text"
+                      value={studentConfig.subheadline || 'Nurturing curious minds and celebrating academic excellence.'}
+                      onChange={(e) => setStudentConfig({ ...studentConfig, subheadline: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 4 Counter Cards */}
+                <div className="pt-2 border-t border-slate-100">
+                  <h5 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-3 text-sky-800">
+                    Live Website Metric Counters
+                  </h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Card 1: Board Pass Rate */}
+                    <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200/80 space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Counter 1</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Value</label>
+                        <input
+                          type="text"
+                          value={studentConfig.boardPassRate || '100%'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, boardPassRate: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-sky-300 text-sm font-bold text-sky-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Label</label>
+                        <input
+                          type="text"
+                          value={studentConfig.boardPassLabel || 'Board Pass Rate'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, boardPassLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-sky-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Card 2: Medals Won */}
+                    <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Counter 2</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Value</label>
+                        <input
+                          type="text"
+                          value={studentConfig.medalsWon || '50+'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, medalsWon: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 text-sm font-bold text-amber-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Label</label>
+                        <input
+                          type="text"
+                          value={studentConfig.medalsLabel || 'Zonal & State Medals'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, medalsLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-amber-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Card 3: Distinction Scorers */}
+                    <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Counter 3</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Value</label>
+                        <input
+                          type="text"
+                          value={studentConfig.distinctionRate || '98%'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, distinctionRate: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-emerald-300 text-sm font-bold text-emerald-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Label</label>
+                        <input
+                          type="text"
+                          value={studentConfig.distinctionLabel || 'Distinction Scorers'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, distinctionLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-emerald-300 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Card 4: Enrolled Scholars */}
+                    <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200/80 space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700">Counter 4</span>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Value</label>
+                        <input
+                          type="text"
+                          value={studentConfig.enrolledStudents || '1,200+'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, enrolledStudents: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-purple-300 text-sm font-bold text-purple-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Stat Label</label>
+                        <input
+                          type="text"
+                          value={studentConfig.enrolledLabel || 'Enrolled Scholars'}
+                          onChange={(e) => setStudentConfig({ ...studentConfig, enrolledLabel: e.target.value })}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-purple-300 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingStdConfig}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md transition"
+                  >
+                    {savingStdConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>Save All Student Metrics Live</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Modal: Add / Edit Student Profile */}
             {showStudentModal && (
               <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
@@ -3080,7 +4246,7 @@ export default function AdminPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Father's Name</label>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Father&apos;s Name</label>
                         <input
                           type="text"
                           value={studentForm.fatherName}

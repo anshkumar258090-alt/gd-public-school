@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { StudentItem } from '@/lib/types';
+import { StudentItem, StudentConfig } from '@/lib/types';
+import { DEFAULT_STUDENT_CONFIG } from '@/lib/api';
 import { 
   GraduationCap, 
   Trophy, 
@@ -17,9 +18,11 @@ import {
 
 interface StudentsSectionProps {
   students?: StudentItem[];
+  config?: StudentConfig;
 }
 
-export default function StudentsSection({ students = [] }: StudentsSectionProps) {
+export default function StudentsSection({ students = [], config }: StudentsSectionProps) {
+  const activeConfig = config || DEFAULT_STUDENT_CONFIG;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('All');
 
@@ -48,39 +51,45 @@ export default function StudentsSection({ students = [] }: StudentsSectionProps)
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
             <Trophy className="w-4 h-4 text-amber-400" />
-            Student Excellence & Directory
+            Student Excellence &amp; Directory
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-            Our Proud Achievers & <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-cyan-400">
-              Student Community
-            </span>
+            {activeConfig.headline ? (
+              <span>{activeConfig.headline}</span>
+            ) : (
+              <>
+                Our Proud Achievers &amp; <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-cyan-400">
+                  Student Community
+                </span>
+              </>
+            )}
           </h2>
           <p className="mt-4 text-slate-400 text-base sm:text-lg">
-            Empowering every student to discover their true brilliance across academics, leadership, sports, and creative arts.
+            {activeConfig.subheadline || 'Empowering every student to discover their true brilliance across academics, leadership, sports, and creative arts.'}
           </p>
         </div>
 
         {/* Highlights Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
           <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-amber-400">100%</span>
-            <p className="text-slate-300 text-sm font-semibold mt-1">CBSE Board Pass Rate</p>
+            <span className="text-3xl sm:text-4xl font-extrabold text-amber-400">{activeConfig.boardPassRate || '100%'}</span>
+            <p className="text-slate-300 text-sm font-semibold mt-1">{activeConfig.boardPassLabel || activeConfig.boardPassSub || 'CBSE Board Pass Rate'}</p>
             <p className="text-slate-500 text-xs mt-0.5">Consecutive 5 Years</p>
           </div>
           <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-cyan-400">45+</span>
-            <p className="text-slate-300 text-sm font-semibold mt-1">State & National Medals</p>
-            <p className="text-slate-500 text-xs mt-0.5">Olympiads & Sports</p>
+            <span className="text-3xl sm:text-4xl font-extrabold text-cyan-400">{activeConfig.medalsWon || activeConfig.medalsCount || '45+'}</span>
+            <p className="text-slate-300 text-sm font-semibold mt-1">{activeConfig.medalsLabel || activeConfig.medalsSub || 'State & National Medals'}</p>
+            <p className="text-slate-500 text-xs mt-0.5">Olympiads &amp; Sports</p>
           </div>
           <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-emerald-400">95%+</span>
-            <p className="text-slate-300 text-sm font-semibold mt-1">Distinction Scorers</p>
+            <span className="text-3xl sm:text-4xl font-extrabold text-emerald-400">{activeConfig.distinctionRate || '95%+'}</span>
+            <p className="text-slate-300 text-sm font-semibold mt-1">{activeConfig.distinctionLabel || activeConfig.distinctionSub || 'Distinction Scorers'}</p>
             <p className="text-slate-500 text-xs mt-0.5">Board Examination</p>
           </div>
           <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/10 text-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-purple-400">1,500+</span>
-            <p className="text-slate-300 text-sm font-semibold mt-1">Enrolled Scholars</p>
+            <span className="text-3xl sm:text-4xl font-extrabold text-purple-400">{activeConfig.enrolledStudents || activeConfig.enrolledCount || '1,500+'}</span>
+            <p className="text-slate-300 text-sm font-semibold mt-1">{activeConfig.enrolledLabel || activeConfig.enrolledSub || 'Enrolled Scholars'}</p>
             <p className="text-slate-500 text-xs mt-0.5">Pre-Nursery to 12th</p>
           </div>
         </div>

@@ -1,4 +1,17 @@
-import { SchoolInfo, SchoolStats, TeamMember, MediaItem, SchoolNotice, AdmissionEnquiry, FeeItem, AdmissionApplication, StudentItem } from './types';
+import {
+  SchoolInfo,
+  SchoolStats,
+  TeamMember,
+  MediaItem,
+  SchoolNotice,
+  AdmissionEnquiry,
+  FeeItem,
+  AdmissionApplication,
+  StudentItem,
+  AdmissionConfig,
+  FeeConfig,
+  StudentConfig,
+} from './types';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -147,6 +160,53 @@ export const DEFAULT_STUDENTS: StudentItem[] = [
   { _id: 'std_3', name: 'Rohan Gupta', rollNo: 'GD-103', grade: 'Class 9', section: 'B', gender: 'Male', fatherName: 'Sanjay Gupta', phone: '+91 98765 33333', performance: '95.2%', achievements: 'Captain of School Football Team' },
   { _id: 'std_4', name: 'Priya Singh', rollNo: 'GD-104', grade: 'Class 11', section: 'Commerce', gender: 'Female', fatherName: 'Vikram Singh', phone: '+91 98765 44444', performance: '97.5%', achievements: 'State Level Chess Gold Medalist' },
 ];
+
+export const DEFAULT_ADMISSION_CONFIG: AdmissionConfig = {
+  sessionYear: '2025–26',
+  isOpen: true,
+  badgeText: 'Session 2025–26',
+  headline: 'Online Admission Registration Portal',
+  subheadline: 'Take the first step toward a transformative educational journey. Complete the digital form below to reserve an entrance interaction.',
+  step1Title: 'Online Submission',
+  step1Desc: 'Fill and submit this digital application form.',
+  step2Title: 'Verification & Interaction',
+  step2Desc: 'Our admissions team contacts you within 24 hours with an interaction slot.',
+  step3Title: 'Seat Confirmation',
+  step3Desc: 'Document submission and fee installment payment at the school office.',
+  requiredDocuments: [
+    'Original Birth Certificate (for Nursery to Class 1)',
+    'Transfer Certificate (TC) from previous recognised school',
+    'Previous Academic Report Card / Marksheet',
+    '4 Recent Passport Size Photographs of Student',
+    '2 Photographs each of Mother & Father / Guardian',
+    'Aadhar Card copies of Student and Parents',
+  ],
+  officeTimings: 'Monday to Saturday, 8:00 AM – 2:00 PM',
+  helplinePhone: '+91 98765 43210',
+};
+
+export const DEFAULT_FEE_CONFIG: FeeConfig = {
+  sessionYear: '2025–26',
+  headline: 'Affordable Excellence, No Hidden Charges',
+  subheadline: 'We believe world-class education should be accessible. Explore our comprehensive, transparent fee breakdown for the academic session 2025–26.',
+  quarterlyDesc: 'Convenient 4-installment plan across the academic calendar.',
+  siblingConcession: '15% Sibling Concession',
+  siblingDesc: 'Tuition fee discount applied automatically for younger siblings.',
+  scholarshipInfo: 'Merit Scholarships',
+  scholarshipDesc: 'Up to 100% tuition waiver for outstanding sports & academic achievers.',
+  zeroHiddenDesc: 'Includes digital classroom access, library, sports & basic lab amenities.',
+};
+
+export const DEFAULT_STUDENT_CONFIG: StudentConfig = {
+  boardPassRate: '100%',
+  boardPassSub: 'CBSE Board Pass Rate (Consecutive 5 Years)',
+  medalsCount: '45+',
+  medalsSub: 'State & National Medals (Olympiads & Sports)',
+  distinctionRate: '95%+',
+  distinctionSub: 'Distinction Scorers in Board Examination',
+  enrolledCount: '1,500+',
+  enrolledSub: 'Enrolled Scholars (Pre-Nursery to 12th)',
+};
 
 
 // Helper to safely write to localStorage without crashing if quota exceeded
@@ -963,4 +1023,104 @@ export async function deleteStudent(id: string) {
   await saveStudents(filtered);
   return { success: true, message: 'Deleted' };
 }
+
+// --- Admission Config APIs ---
+export async function getAdmissionConfig(): Promise<AdmissionConfig> {
+  const cloud = await fetchCloudDb();
+  if (cloud && cloud.admissionConfig) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_admission_config', JSON.stringify(cloud.admissionConfig));
+    }
+    return { ...DEFAULT_ADMISSION_CONFIG, ...cloud.admissionConfig };
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_admission_config');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === 'object') return { ...DEFAULT_ADMISSION_CONFIG, ...parsed };
+      } catch {}
+    }
+  }
+
+  return DEFAULT_ADMISSION_CONFIG;
+}
+
+export async function updateAdmissionConfig(config: Partial<AdmissionConfig>) {
+  const current = await getAdmissionConfig();
+  const updated = { ...current, ...config };
+  await syncToCloud({ admissionConfig: updated });
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_admission_config', JSON.stringify(updated));
+  }
+  return { success: true, data: updated };
+}
+
+// --- Fee Config APIs ---
+export async function getFeeConfig(): Promise<FeeConfig> {
+  const cloud = await fetchCloudDb();
+  if (cloud && cloud.feeConfig) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_fee_config', JSON.stringify(cloud.feeConfig));
+    }
+    return { ...DEFAULT_FEE_CONFIG, ...cloud.feeConfig };
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_fee_config');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === 'object') return { ...DEFAULT_FEE_CONFIG, ...parsed };
+      } catch {}
+    }
+  }
+
+  return DEFAULT_FEE_CONFIG;
+}
+
+export async function updateFeeConfig(config: Partial<FeeConfig>) {
+  const current = await getFeeConfig();
+  const updated = { ...current, ...config };
+  await syncToCloud({ feeConfig: updated });
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_fee_config', JSON.stringify(updated));
+  }
+  return { success: true, data: updated };
+}
+
+// --- Student Config APIs ---
+export async function getStudentConfig(): Promise<StudentConfig> {
+  const cloud = await fetchCloudDb();
+  if (cloud && cloud.studentConfig) {
+    if (typeof window !== 'undefined') {
+      safeSetLocalStorage('gdps_local_student_config', JSON.stringify(cloud.studentConfig));
+    }
+    return { ...DEFAULT_STUDENT_CONFIG, ...cloud.studentConfig };
+  }
+
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('gdps_local_student_config');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        if (parsed && typeof parsed === 'object') return { ...DEFAULT_STUDENT_CONFIG, ...parsed };
+      } catch {}
+    }
+  }
+
+  return DEFAULT_STUDENT_CONFIG;
+}
+
+export async function updateStudentConfig(config: Partial<StudentConfig>) {
+  const current = await getStudentConfig();
+  const updated = { ...current, ...config };
+  await syncToCloud({ studentConfig: updated });
+  if (typeof window !== 'undefined') {
+    safeSetLocalStorage('gdps_local_student_config', JSON.stringify(updated));
+  }
+  return { success: true, data: updated };
+}
+
 

@@ -109,6 +109,54 @@ export interface StudentItem {
   achievements?: string;
 }
 
+export interface AdmissionConfig {
+  sessionYear: string;
+  isOpen: boolean;
+  badgeText: string;
+  headline: string;
+  subheadline: string;
+  step1Title: string;
+  step1Desc: string;
+  step2Title: string;
+  step2Desc: string;
+  step3Title: string;
+  step3Desc: string;
+  requiredDocuments: string[];
+  officeTimings: string;
+  helplinePhone: string;
+}
+
+export interface FeeConfig {
+  sessionYear: string;
+  headline: string;
+  subheadline: string;
+  quarterlyDesc: string;
+  siblingConcession: string;
+  siblingDesc: string;
+  scholarshipInfo: string;
+  scholarshipDesc: string;
+  zeroHiddenDesc: string;
+}
+
+export interface StudentConfig {
+  headline?: string;
+  subheadline?: string;
+  boardPassRate: string;
+  boardPassSub?: string;
+  boardPassLabel?: string;
+  medalsCount?: string;
+  medalsWon?: string;
+  medalsSub?: string;
+  medalsLabel?: string;
+  distinctionRate: string;
+  distinctionSub?: string;
+  distinctionLabel?: string;
+  enrolledCount?: string;
+  enrolledStudents?: string;
+  enrolledSub?: string;
+  enrolledLabel?: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
